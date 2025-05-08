@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future - Nik Tesla AI</title> <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
+    <script src="sketch.js"></script>
+    <style>
+        /* Stili specifici solo per la pagina Future */
+        /* Esempio per stilare il contenitore del contenuto (simili ad about.html per coerenza) */
+        .page-content {
+            z-index: 10; /* Assicura che il contenuto sia sopra il canvas */
+            position: relative; /* Permette a z-index di funzionare bene */
+
+            /* Responsività e dimensioni */
+            max-width: 800px; /* Larghezza massima del contenuto */
+            width: 90%; /* Larghezza responsive */
+            margin: 80px auto 20px auto; /* Centra orizzontalmente, aggiunge spazio dall'alto */
+
+            /* Aspetto visivo */
+            background-color: rgba(20, 20, 30, 0.8);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            color: #fff;
+        }
+
+        .page-content h1 {
+            text-align: center;
+            margin-top: 0;
+            color: rgba(200, 200, 255, 1); /* Colore titolo */
+        }
+
+         .page-content p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px; /* Spazio sotto i paragrafi */
+        }
+
+        /* Stili per la sezione Analisi Sentiment */
+        .sentiment-analyzer {
+            margin-top: 30px; /* Spazio sopra questa sezione */
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2); /* Linea separatrice */
+        }
+
+        .sentiment-analyzer h2 {
+            text-align: center;
+            color: rgba(200, 200, 255, 1);
+            margin-bottom: 20px;
+        }
+
+        .sentiment-analyzer textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+
+         .sentiment-analyzer textarea:focus {
+            outline: none;
+            border-color: rgba(200, 200, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+
+        .sentiment-analyzer button {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background-color: rgba(150, 100, 255, 0.8); /* Colore bottone diverso */
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+
+        .sentiment-analyzer button:hover {
+             background-color: rgba(150, 100, 255, 1);
+        }
+
+         .sentiment-analyzer button:active {
+             background-color: rgba(120, 80, 200, 1);
+        }
+
+
+        #sentimentResult {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background-color: rgba(50, 50, 60, 0.6);
+            color: rgba(200, 255, 200, 0.9); /* Colore per il risultato */
+            min-height: 30px;
+            font-size: 1.1em;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+         /* Aggiustamenti Responsivi Minori */
+        @media (max-width: 600px) {
+            .page-content {
+                margin-top: 60px; /* Riduci spazio dall'alto su schermi piccoli */
+                padding: 15px;
+            }
+             .page-content p,
+             .sentiment-analyzer textarea,
+             .sentiment-analyzer button,
+             #sentimentResult {
+                font-size: 1em; /* Riduci font size */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <a href="index.html" class="nav-button">HOME</a>
+        <a href="about.html" class="nav-button">ABOUT</a>
+        <a href="future.html" class="nav-button">FUTURE</a>
+        <a href="podcast.html" class="nav-button">PODCAST</a> <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="contact.html" class="nav-button">CONTACT</a>
+    </div>
+
+    <div class="page-content">
+        <h1>The Future of Nik Tesla AI</h1> <p>Looking to the future, my commitment is to experiment with ever more innovative solutions and build a community of enthusiasts with whom we can grow together. Feel free to explore projects, leave feedback and follow the evolution of this journey into the world of AI: the best is yet to come!</p>
+
+        <div class="sentiment-analyzer">
+            <h2>Try the Sentiment Analyzer</h2> <p>Enter a short text below to see how an AI can determine its sentiment (positive, negative, or neutral).</p> <textarea id="sentimentText" placeholder="Write the text to analyze here..."></textarea> <button id="analyzeSentimentButton">Analyze Sentiment</button> <div id="sentimentResult"></div> </div>
+        <script>
+            // Attendi che il DOM sia completamente caricato
+            document.addEventListener('DOMContentLoaded', () => {
+                // Recupera gli elementi HTML della sezione Sentiment
+                const sentimentTextarea = document.getElementById('sentimentText');
+                const analyzeButton = document.getElementById('analyzeSentimentButton');
+                const resultDiv = document.getElementById('sentimentResult');
+
+                // *** URL DELLA TUA FUNZIONE SERVERLESS PYTHON SU VERCEL ***
+                // Usiamo window.location.origin per ottenere la parte base dell'URL
+                // della pagina corrente (es. https://[deployment-id].vercel.app o https://tuo-domino.com)
+                // e aggiungiamo il percorso corretto alla tua API.
+                const API_ENDPOINT_PATH = '/api/sentiment'; // <--- CORRETTO: Deve corrispondere al nome della tua funzione sentiment
+                const SENTIMENT_API_URL = window.location.origin + API_ENDPOINT_PATH;
+
+                console.log("Sentiment API URL being called:", SENTIMENT_API_URL); // Aggiunto log per debug
+
+                // --- Controlli di base: verifica che gli elementi HTML per il Sentiment esistano ---
+                // Questo evita errori se il codice JS viene usato su una pagina che non ha la sezione Sentiment
+                if (!sentimentTextarea || !analyzeButton || !resultDiv) {
+                    console.warn("Elementi HTML per l'analisi sentiment non trovati. La funzionalità non sarà attiva su questa pagina.");
+                    return; // Esci dalla funzione se non trovi gli elementi
+                }
+
+
+                // Aggiungi un ascoltatore di eventi al pulsante
+                analyzeButton.addEventListener('click', async () => {
+                    const textToAnalyze = sentimentTextarea.value.trim();
+
+                    if (!textToAnalyze) {
+                        resultDiv.textContent = 'Please enter text to analyze.'; // Messaggio in inglese
+                        resultDiv.style.color = 'orange'; // Colore per avvisi
+                        return;
+                    }
+
+                    resultDiv.textContent = 'Analyzing text...'; // Messaggio in inglese
+                    resultDiv.style.color = 'white'; // Colore di default durante l'attesa
+                    analyzeButton.disabled = true; // Disabilita il pulsante durante l'analisi
+
+                    try {
+                        // Fai la chiamata HTTP (fetch) alla tua funzione serverless Python
+                        const response = await fetch(SENTIMENT_API_URL, { // Usa l'URL corretto
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ text: textToAnalyze }) // Invia il testo nel corpo della richiesta
+                        });
+
+                        if (!response.ok) {
+                             const errorBody = await response.text();
+                             // Aggiunto un messaggio di errore più dettagliato per il debug
+                             throw new Error(`Backend HTTP error: ${response.status} ${response.statusText} - Response: ${errorBody}`); // Messaggio in inglese
+                        }
+
+                        const data = await response.json(); // Assumi che il backend risponda con JSON
+
+                        // Mostra il risultato
+                        // Assumi che il backend sentiment restituisca { sentiment: "..." }
+                        if (data && data.sentiment) {
+                            let displayResult = `Sentiment: ${data.sentiment}`;
+                            let resultColor = 'white'; // Default color
+
+                            // Aggiungi emoji o colori in base al sentiment (se il backend li fornisce o li decidi qui)
+                            if (data.sentiment === 'positive') { // Assumi che il backend restituisca 'positive', 'negative', 'neutral'
+                                displayResult = 'Sentiment: Positive 😊'; // Mostra in inglese
+                                resultColor = 'lightgreen';
+                            } else if (data.sentiment === 'negative') {
+                                displayResult = 'Sentiment: Negative 😠'; // Mostra in inglese
+                                resultColor = 'salmon';
+                            } else { // Neutral
+                                displayResult = 'Sentiment: Neutral 😐'; // Mostra in inglese
+                                resultColor = 'lightblue';
+                            }
+
+                            resultDiv.textContent = displayResult;
+                            resultDiv.style.color = resultColor;
+
+                        } else {
+                            resultDiv.textContent = 'Invalid response received from the backend.'; // Messaggio in inglese
+                            resultDiv.style.color = 'orange';
+                            console.error('Unexpected backend response or incorrect format:', data);
+                        }
+
+                    } catch (error) {
+                        console.error('Error communicating with sentiment analysis service:', error); // Messaggio in inglese
+                        // Messaggio di errore più dettagliato
+                        resultDiv.textContent = `Error: ${error.message || 'Could not connect to sentiment analysis service or process request.'}`; // Messaggio in inglese
+                        resultDiv.style.color = 'red'; // Colore per errori
+                    } finally {
+                        analyzeButton.disabled = false; // Riabilita il pulsante
+                    }
+                });
+            });
+        </script>
+
+    </div> </body>
+</html>

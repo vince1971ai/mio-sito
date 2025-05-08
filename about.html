@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Nik Tesla AI</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
+    <script src="sketch.js"></script>
+    <style>
+        /* Stili specifici solo per la pagina About */
+        /* Esempio per stilare il contenitore del contenuto (simili ad about.html per coerenza) */
+        .page-content {
+            z-index: 10; /* Assicura che il contenuto sia sopra il canvas */
+            position: relative; /* Permette a z-index di funzionare bene */
+
+            /* Responsività e dimensioni */
+            max-width: 800px; /* Larghezza massima del contenuto */
+            width: 90%; /* Larghezza responsive */
+            margin: 80px auto 20px auto; /* Centra orizzontalmente, aggiunge spazio dall'alto */ 
+
+            /* Aspetto visivo */
+            background-color: rgba(20, 20, 30, 0.8);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            color: #fff;
+            text-align: center; /* Centra il testo e gli elementi inline/inline-block come l'immagine */
+        }
+
+        .page-content h1 {
+            text-align: center;
+            margin-top: 0;
+            color: rgba(200, 200, 255, 1); /* Colore titolo */
+        }
+
+         .page-content p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px; /* Spazio sotto i paragrafi */
+            text-align: left; /* Ri-allinea il testo dei paragrafi a sinistra */
+        }
+
+        /* Stili per l'immagine nella pagina About */
+        .page-content img {
+            display: block; /* Rende l'immagine un blocco per poter usare margin: auto */
+            margin: 20px auto; /* Centra l'immagine orizzontalmente e aggiunge spazio sopra e sotto */
+            max-width: 100%; /* Assicura che l'immagine non superi la larghezza del contenitore */
+            height: auto; /* Mantiene le proporzioni */
+            border-radius: 8px; /* Bordi arrotondati per l'immagine */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Ombra leggera */
+            /* Puoi impostare una larghezza massima specifica se 100% è troppo grande */
+            max-width: 300px; /* Esempio: limita la larghezza massima a 300px */
+        }
+
+
+         /* Aggiustamenti Responsivi Minori */
+        @media (max-width: 600px) {
+            .page-content {
+                margin-top: 60px; /* Riduci spazio dall'alto su schermi piccoli */
+                padding: 15px;
+            }
+             .page-content p {
+                font-size: 1em; /* Riduci font size */
+            }
+             .page-content img {
+                 max-width: 80%; /* Riduci la larghezza massima dell'immagine su schermi piccoli se necessario */
+             }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <a href="index.html" class="nav-button">HOME</a>
+        <a href="about.html" class="nav-button">ABOUT</a>
+        <a href="future.html" class="nav-button">FUTURE</a>
+        <a href="podcast.html" class="nav-button">PODCAST</a>
+        <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="contact.html" class="nav-button">CONTACT</a>
+    </div>
+
+    <div class="page-content">
+        <h1>Chi Sono</h1>
+
+        <img src="images/Firefly un cappello, spaziale in versione umana 36084.jpg" alt="Immagine che rappresenta Nik Tesla AI">
+
+        <p>Welcome to my digital space! My name is Vincenzo and I am a passionate explorer of the tech world: through masterclasses and courses - from ‘Masterclasses Fundamentals of Python Language’ (Epicode) to ‘Introduction to ChatGPT’ (OpenAI Academy), from ‘Understanding Machine Learning’ (Google Italia) to ‘Generative AI’ (Google Cloud) - I am honing my skills in Python, Large Language Models, Responsible AI, Enhanced Productivity and much more, day after day.</p>
+
+        <p>Although I don't yet hold formal professional titles, each badge I obtain represents a piece of my continuous learning journey. This site is the laboratory where I test ideas and prototype advanced features, sharing with you demos, practical examples and insights on how artificial intelligence can revolutionise processes and creativity.</p>
+
+        <p>Looking to the future, my commitment is to experiment with ever more innovative solutions and build a community of enthusiasts with whom we can grow together. Feel free to explore projects, leave feedback and follow the evolution of this journey into the world of AI: the best is yet to come!</p>
+
+        </div>
+
+    </body>
+</html>

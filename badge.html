@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badge - Nik Tesla AI</title>
+    <link rel="stylesheet" href="style.css"> {/* Assicurati che style.css sia collegato correttamente */}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script> {/* Script per l'animazione di sfondo */}
+    <script src="sketch.js"></script> {/* Script per l'animazione di sfondo e logiche AI */}
+    <style>
+        /* Stili specifici solo per la pagina Badge */
+        .page-content {
+            z-index: 10; /* Assicura che il contenuto sia sopra il canvas */
+            position: relative; /* Permette a z-index di funzionare bene */
+
+            /* Responsività e dimensioni */
+            max-width: 800px; /* Larghezza massima del contenuto */
+            width: 90%; /* Larghezza responsive */
+            margin: 80px auto 20px auto; /* Centra orizzontalmente, aggiunge spazio dall'alto */
+            padding: 25px; /* Padding interno */
+            box-sizing: border-box; /* Include padding nel calcolo della larghezza */
+
+            /* Aspetto visivo */
+            background-color: rgba(20, 20, 30, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            color: #fff;
+            text-align: center; /* Centra il titolo e i contenitori dei badge */
+        }
+
+        .page-content h1 {
+            text-align: center;
+            margin-top: 0;
+            color: rgba(200, 200, 255, 1); /* Colore titolo */
+            margin-bottom: 30px; /* Spazio sotto il titolo */
+        }
+
+        /* Stili per i singoli blocchi badge */
+        .badge-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.05);
+            /* Rimosso text-align: center; qui per non interferire con flexbox */
+        }
+
+        /* Stili per le immagini all'interno di un badge item */
+        .badge-item img {
+            display: block; /* Rende l'immagine un blocco */
+            /* Larghezza gestita dal contenitore flex */
+            max-width: 100%; /* Assicura che non superi la larghezza del contenitore */
+            height: auto; /* Mantiene le proporzioni */
+            margin: 0 auto; /* Centra l'immagine se non è in un flex container */
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Ombra leggera */
+        }
+
+        /* Stili specifici per i contenitori che hanno più immagini affiancate */
+        .badge-images-row {
+            display: flex; /* Usa flexbox per allineare gli elementi figli (immagini) */
+            flex-direction: row; /* Allinea gli elementi in riga */
+            gap: 10px; /* Spazio tra le immagini */
+            align-items: center; /* Allinea verticalmente le immagini al centro */
+            flex-wrap: wrap; /* Permette alle immagini di andare a capo su schermi stretti */
+            justify-content: center; /* Centra le immagini orizzontalmente */
+            /* Rimosso margin-bottom: 10px; dato che non c'è testo sotto */
+        }
+
+        /* Stili specifici per le immagini all'interno di un contenitore flex */
+        .badge-images-row img {
+             display: block; /* Assicura che siano blocchi */
+             /* Calcola la larghezza in base al numero di immagini nella riga */
+             /* Per 3 immagini: */
+             /* width: calc(33.33% - 7px); */
+             /* Per 2 immagini: */
+             /* width: calc(50% - 5px); */
+             max-width: 100%; /* Assicura che non superino la larghezza disponibile */
+             height: auto; /* Mantiene le proporzioni */
+             margin: 0; /* Rimuovi margini di default */
+             border-radius: 4px;
+             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Ombra leggera */
+        }
+
+         /* Media Query per gestire le immagini affiancate su schermi più piccoli */
+        @media (max-width: 600px) {
+             /* Aggiustamenti generali per la pagina badge su schermi piccoli */
+            .page-content {
+                margin-top: 60px; /* Riduci spazio dall'alto su schermi piccoli */
+                padding: 15px;
+            }
+             .page-content h1 {
+                font-size: 1.8em; /* Riduci dimensione titolo */
+            }
+             .badge-item {
+                 padding: 10px; /* Riduci padding interno del badge item */
+             }
+
+            /* Su schermi più piccoli, metti le immagini affiancate in colonna */
+            .badge-images-row {
+                flex-direction: column; /* Metti le immagini in colonna */
+                gap: 15px; /* Aumenta lo spazio tra le immagini in colonna */
+            }
+             .badge-images-row img {
+                 width: 80%; /* Fai in modo che occupino una buona parte della larghezza in colonna */
+                 max-width: 200px; /* Limita la larghezza massima anche in colonna */
+                 margin: 0 auto; /* Centra le immagini in colonna */
+             }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <a href="index.html" class="nav-button">HOME</a>
+        <a href="about.html" class="nav-button">ABOUT</a>
+        <a href="future.html" class="nav-button">FUTURE</a>
+        <a href="podcast.html" class="nav-button">PODCAST</a>
+        <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="contact.html" class="nav-button">CONTACT</a>
+    </div>
+
+    <div class="page-content">
+        <h1>My Badges</h1>
+        
+        <div class="badge-item">          
+            <img src="images/badge.JPG" alt="Badge Google Cloud Responsible AI">
+        </div>
+       
+        <div class="badge-item">             
+             <div class="badge-images-row">
+                <img src="images/formatore.JPG" alt="Badge Fastweb Formatore">
+                <img src="images/introduzione.JPG" alt="Badge Fastweb NotebookLM">
+             </div>
+        </div>
+
+        {/* Badge Fastweb Digital Academy - Riga Inferiore (2 immagini) */}
+        <div class="badge-item">
+            {/* Contenitore per le 2 immagini affiancate */}
+             <div class="badge-images-row">
+                <img src="images/intelligenza.JPG" alt="Badge Fastweb Intelligenza Artificiale">
+                <img src="images/assistenti.JPG" alt="Badge Fastweb Assistenti Virtuali">
+             </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast - Nik Tesla AI</title> <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
+    <script src="sketch.js"></script>
+    <style>
+        /* Stili specifici solo per la pagina Podcast (simili ad about/future/badge per coerenza) */
+        .page-content {
+            z-index: 10; /* Assicura che il contenuto sia sopra il canvas */
+            position: relative; /* Permette a z-index di funzionare bene */
+
+            /* Responsività e dimensioni */
+            max-width: 800px; /* Larghezza massima del contenuto */
+            width: 90%; /* Larghezza responsive */
+            margin: 80px auto 20px auto; /* Centra orizzontalmente, aggiunge spazio dall'alto */
+
+            /* Aspetto visivo */
+            background-color: rgba(20, 20, 30, 0.8);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            color: #fff;
+            text-align: center; /* Centra il titolo e il lettore audio */
+        }
+
+        .page-content h1 {
+            text-align: center;
+            margin-top: 0;
+            color: rgba(200, 200, 255, 1); /* Colore titolo */
+            margin-bottom: 30px; /* Spazio sotto il titolo */
+        }
+
+        /* Stili per il Contenitore del Podcast all'interno di page-content */
+        .podcast-container {
+            /* Questi stili sono simili a quelli che erano in style.css,
+               ma ora sono specifici per questa pagina e centrati nel page-content */
+            margin-top: 20px; /* Spazio sopra il podcast all'interno del container */
+            margin-bottom: 20px; /* Spazio sotto il podcast */
+            padding: 0; /* Rimuovi padding extra se page-content ha già padding */
+            /* Rimuovi background/border/shadow se page-content li gestisce già */
+            /* background-color: rgba(20, 20, 30, 0.8); */
+            /* border: 1px solid rgba(255, 255, 255, 0.2); */
+            /* border-radius: 8px; */
+            /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); */
+            color: #fff;
+            text-align: center; /* Centra il titolo e il lettore audio */
+
+            /* Dimensioni "media grandezza" e responsività */
+            max-width: 500px; /* Larghezza massima */
+            width: 90%; /* Larghezza responsive */
+            box-sizing: border-box; /* Include padding nel calcolo della larghezza */
+            margin-left: auto; /* Centra orizzontalmente all'interno di page-content */
+            margin-right: auto;
+        }
+
+        .podcast-container h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: rgba(200, 200, 255, 1); /* Colore titolo */
+            font-size: 1.5em;
+        }
+
+        .podcast-container audio {
+            width: 100%; /* Fa sì che il lettore audio occupi tutta la larghezza del contenitore */
+            /* Nota: Lo styling del lettore audio nativo è limitato e varia tra browser */
+        }
+
+         /* Aggiustamenti Responsivi Minori */
+        @media (max-width: 600px) {
+            .page-content {
+                margin-top: 60px; /* Riduci spazio dall'alto su schermi piccoli */
+                padding: 15px;
+            }
+             .page-content h1 {
+                font-size: 1.8em; /* Riduci dimensione titolo */
+            }
+             .podcast-container {
+                 padding: 15px; /* Aggiungi padding se rimosso sopra */
+             }
+             .podcast-container h2 {
+                 font-size: 1.3em; /* Riduci dimensione titolo podcast */
+             }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <a href="index.html" class="nav-button">HOME</a>
+        <a href="about.html" class="nav-button">ABOUT</a>
+        <a href="future.html" class="nav-button">FUTURE</a>
+        <a href="podcast.html" class="nav-button">PODCAST</a> <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="contact.html" class="nav-button">CONTACT</a>
+    </div>
+
+    <div class="page-content">
+        <h1>Nik Tesla AI Podcast</h1> <div class="podcast-container">
+            <h2>Benchmark Italian Proverbs for LLM</h2> <audio controls>
+                <source src="audio/benchmark-proverbs.mp3" type="audio/mpeg"> {/* PERCORSO E TIPO CORRETTI PER FILE .mp3 */}
+                {/* Messaggio di fallback per browser che non supportano il tag audio */}
+                Your browser does not support the audio element. </audio>
+        </div>
+        </div>
+
+    </body>
+</html>

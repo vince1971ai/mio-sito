@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en"> <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nik Tesla AI</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
+  <script src="sketch.js"></script>
+  </head>
+<body>
+  <div class="button-container">
+      <a href="index.html" class="nav-button">HOME</a>
+      <a href="about.html" class="nav-button">ABOUT</a>
+      <a href="future.html" class="nav-button">FUTURE</a>
+      <a href="podcast.html" class="nav-button">PODCAST</a>
+      <a href="badge.html" class="nav-button">BADGE</a>
+      <a href="contact.html" class="nav-button">CONTACT</a>
+  </div>
+
+  <div class="ai-chat-container">
+    <label for="userQuestion">Ask the AI:</label> <textarea id="userQuestion" rows="3" placeholder="Write your question here..."></textarea> <button id="sendQuestion">Send to AI</button> <div id="aiResponse"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const userQuestionTextarea = document.getElementById('userQuestion');
+        const sendQuestionButton = document.getElementById('sendQuestion');
+        const aiResponseDiv = document.getElementById('aiResponse');
+
+        // *** URL DELLA TUA FUNZIONE SERVERLESS API SU VERCEL ***
+        // Usiamo window.location.origin per ottenere la parte base dell'URL
+        // della pagina corrente (es. https://[deployment-id].vercel.app o https://tuo-domino.com)
+        // e aggiungiamo il percorso corretto alla tua API.
+        const API_ENDPOINT_PATH = '/api/ask-ai'; // <--- CORRETTO: Deve corrispondere al nome della tua funzione serverless
+        const AI_API_URL = window.location.origin + API_ENDPOINT_PATH;
+
+        console.log("AI API URL being called:", AI_API_URL); // Aggiunto log per debug
+
+        // Controlli di base: verifica che gli elementi HTML esistano
+        if (!userQuestionTextarea || !sendQuestionButton || !aiResponseDiv) {
+            console.error("Elementi HTML per la chat AI non trovati. La funzionalità non sarà attiva.");
+            return; // Esci dalla funzione se non trovi gli elementi
+        }
+
+        sendQuestionButton.addEventListener('click', async () => {
+            const question = userQuestionTextarea.value.trim();
+
+            if (!question) {
+                aiResponseDiv.textContent = 'Please enter a question.'; // Messaggio in inglese
+                aiResponseDiv.style.color = 'orange';
+                return;
+            }
+
+            aiResponseDiv.textContent = 'Thinking...'; // Messaggio in inglese
+            aiResponseDiv.style.color = 'white';
+            sendQuestionButton.disabled = true; // Disabilita il pulsante durante l'attesa
+
+            try {
+                const response = await fetch(AI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question }) // Assicurati che la tua API si aspetti "question"
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    // Aggiunto un messaggio di errore più dettagliato per il debug
+                    throw new Error(`Backend HTTP error: ${response.status} ${response.statusText} - Response: ${errorBody}`);
+                }
+
+                const data = await response.json(); // Assumi che il backend risponda con JSON
+
+                if (data && data.answer) { // Assumi che la risposta sia in "answer" (come nel codice della funzione)
+                    aiResponseDiv.textContent = data.answer;
+                    aiResponseDiv.style.color = 'lightgreen'; // Colore per risposta positiva
+                } else {
+                     aiResponseDiv.textContent = 'Received an invalid response from the AI.'; // Messaggio in inglese
+                     aiResponseDiv.style.color = 'orange';
+                     console.error('Unexpected backend response or incorrect format:', data);
+                }
+
+            } catch (error) {
+                console.error('Error communicating with AI service:', error);
+                // Messaggio di errore più dettagliato
+                aiResponseDiv.textContent = `Error: ${error.message || 'Could not get a response from the AI.'}`; // Messaggio in inglese
+                aiResponseDiv.style.color = 'red'; // Colore per errori
+            } finally {
+                sendQuestionButton.disabled = false; // Riabilita il pulsante
+            }
+        });
+    });
+  </script>
+
+</body>
+</html>
