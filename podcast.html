@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en"> <head>
+<html lang="it">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Badge - Nik Tesla AI</title> <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
-    <script src="sketch.js"></script>
+    <title>Podcast - Nik Tesla AI</title>
+    <link rel="stylesheet" href="style.css"> {/* Assicurati che style.css sia collegato correttamente */}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script> {/* Script per l'animazione di sfondo */}
+    <script src="sketch.js"></script> {/* Script per l'animazione di sfondo e logiche AI */}
     <style>
-        /* Stili specifici solo per la pagina Badge (simili ad about/future per coerenza) */
+        /* Stili specifici solo per la pagina Podcast (simili ad about/future/badge per coerenza) */
         .page-content {
             z-index: 10; /* Assicura che il contenuto sia sopra il canvas */
             position: relative; /* Permette a z-index di funzionare bene */
@@ -15,14 +17,15 @@
             max-width: 800px; /* Larghezza massima del contenuto */
             width: 90%; /* Larghezza responsive */
             margin: 80px auto 20px auto; /* Centra orizzontalmente, aggiunge spazio dall'alto */
+            padding: 25px; /* Padding interno */
+            box-sizing: border-box; /* Include padding nel calcolo della larghezza */
 
             /* Aspetto visivo */
             background-color: rgba(20, 20, 30, 0.8);
-            padding: 25px;
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
             color: #fff;
-            text-align: center; /* Centra il titolo e gli elementi principali */
+            text-align: center; /* Centra il titolo e il lettore audio container */
         }
 
         .page-content h1 {
@@ -32,30 +35,40 @@
             margin-bottom: 30px; /* Spazio sotto il titolo */
         }
 
-        /* Puoi aggiungere stili specifici qui per come visualizzare i tuoi badge,
-           ad esempio se sono immagini, liste, ecc. */
-        .badge-item {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            background-color: rgba(255, 255, 255, 0.05);
+        /* Stili per il Contenitore del Podcast all'interno di page-content */
+        .podcast-container {
+            /* Questi stili sono simili a quelli che erano in style.css,
+               ma ora sono specifici per questa pagina e centrati nel page-content */
+            margin-top: 20px; /* Spazio sopra il podcast all'interno del container */
+            margin-bottom: 20px; /* Spazio sotto il podcast */
+            padding: 0; /* Rimuovi padding extra se page-content ha già padding */
+            /* Rimuovi background/border/shadow se page-content li gestisce già */
+            /* background-color: rgba(20, 20, 30, 0.8); */
+            /* border: 1px solid rgba(255, 255, 255, 0.2); */
+            /* border-radius: 8px; */
+            /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); */
+            color: #fff;
+            text-align: center; /* Centra il titolo e il lettore audio */
+
+            /* Dimensioni "media grandezza" e responsività */
+            max-width: 500px; /* Larghezza massima */
+            width: 90%; /* Larghezza responsive */
+            box-sizing: border-box; /* Include padding nel calcolo della larghezza */
+            margin-left: auto; /* Centra orizzontalmente all'interno di page-content */
+            margin-right: auto;
         }
 
-        .badge-item img {
-            max-width: 150px; /* Dimensione massima per le immagini dei badge */
-            height: auto;
-            margin: 0 auto 10px auto; /* Centra l'immagine orizzontalmente e aggiunge spazio sotto */
-            border-radius: 4px;
+        .podcast-container h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: rgba(200, 200, 255, 1); /* Colore titolo */
+            font-size: 1.5em;
         }
 
-        .badge-item p {
-            font-size: 1em;
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.5;
-            text-align: left; /* Allinea il testo descrittivo a sinistra */
+        .podcast-container audio {
+            width: 100%; /* Fa sì che il lettore audio occupi tutta la larghezza del contenitore */
+            /* Nota: Lo styling del lettore audio nativo è limitato e varia tra browser */
         }
-
 
          /* Aggiustamenti Responsivi Minori */
         @media (max-width: 600px) {
@@ -66,12 +79,12 @@
              .page-content h1 {
                 font-size: 1.8em; /* Riduci dimensione titolo */
             }
-             .badge-item img {
-                 max-width: 100px; /* Riduci dimensione badge su schermi piccoli */
+             .podcast-container {
+                 padding: 15px; /* Aggiungi padding se rimosso sopra */
              }
-              .badge-item p {
-                font-size: 0.9em; /* Riduci font size testo badge */
-            }
+             .podcast-container h2 {
+                 font-size: 1.3em; /* Riduci dimensione titolo podcast */
+             }
         }
 
     </style>
@@ -81,23 +94,25 @@
         <a href="index.html" class="nav-button">HOME</a>
         <a href="about.html" class="nav-button">ABOUT</a>
         <a href="future.html" class="nav-button">FUTURE</a>
-        <a href="Space_invaders.html" class="nav-button">INVADERS</a> <a href="podcast.html" class="nav-button">PODCAST</a> <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="Space_invaders.html" class="nav-button">INVADERS</a> {/* NUOVO PULSANTE INVADERS */}
+        <a href="podcast.html" class="nav-button">PODCAST</a>
+        <a href="badge.html" class="nav-button">BADGE</a>
         <a href="contact.html" class="nav-button">CONTACT</a>
     </div>
 
     <div class="page-content">
-        <h1>My Badges</h1> <div class="badge-item">
-            <p>Description of Badge 1: Obtained by completing course X on Platform Y.</p> </div>
-
-        <div class="badge-item">
-             <p>Description of Badge 2: Recognition for participation in event Z.</p> </div>
-
-        {/* Rimosso il Badge 3 */}
-        {/* <div class="badge-item">
-             <p>Description of Badge 3: Recognition for participation in event Z.</p>
-        </div> */}
-
+        <h1>Nik Tesla AI Podcast</h1>
+        <div class="podcast-container">
+            <h2>Benchmark Italian Proverbs for LLM</h2>
+            <audio controls>
+                <source src="audio/benchmark-proverbs.mp3" type="audio/mpeg"> {/* PERCORSO E TIPO CORRETTI PER FILE .mp3 */}
+                {/* Messaggio di fallback per browser che non supportano il tag audio */}
+                Il tuo browser non supporta l'elemento audio.
+            </audio>
         </div>
+    </div>
 
-    </body>
+    {/* NOTA: Lo script sketch.js è incluso nella head e gestisce l'animazione */}
+
+</body>
 </html>
