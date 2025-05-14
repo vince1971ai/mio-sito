@@ -1,12 +1,17 @@
 <!DOCTYPE html>
-<html lang="en"> <head>
+<html lang="en"> {/* Lingua impostata su italiano */}
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Badge - Nik Tesla AI</title> <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
-    <script src="sketch.js"></script>
+    <title>Badge - Nik Tesla AI</title> {/* Titolo della pagina */}
+    {/* Inclusione del file CSS comune per gli stili generali */}
+    <link rel="stylesheet" href="style.css"> {/* Assicurati che style.css sia collegato correttamente */}
+    {/* Inclusione della libreria p5.js per l'animazione di sfondo */}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script> {/* Script per l'animazione di sfondo */}
+    <script src="sketch.js"></script> {/* Script per l'animazione di sfondo e logiche AI */}
     <style>
-        /* Stili specifici solo per la pagina Badge (simili ad about/future per coerenza) */
+        /* Stili specifici solo per la pagina Badge */
+        /* Applica stili simili a .page-content per il contenitore principale del contenuto */
         .page-content {
             z-index: 10; /* Assicura che il contenuto sia sopra il canvas */
             position: relative; /* Permette a z-index di funzionare bene */
@@ -15,14 +20,15 @@
             max-width: 800px; /* Larghezza massima del contenuto */
             width: 90%; /* Larghezza responsive */
             margin: 80px auto 20px auto; /* Centra orizzontalmente, aggiunge spazio dall'alto */
+            padding: 25px; /* Padding interno */
+            box-sizing: border-box; /* Include padding nel calcolo della larghezza */
 
             /* Aspetto visivo */
             background-color: rgba(20, 20, 30, 0.8);
-            padding: 25px;
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
             color: #fff;
-            text-align: center; /* Centra il titolo e gli elementi principali */
+            text-align: center; /* Centra il titolo */
         }
 
         .page-content h1 {
@@ -32,33 +38,11 @@
             margin-bottom: 30px; /* Spazio sotto il titolo */
         }
 
-        /* Puoi aggiungere stili specifici qui per come visualizzare i tuoi badge,
-           ad esempio se sono immagini, liste, ecc. */
-        .badge-item {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            background-color: rgba(255, 255, 255, 0.05);
-        }
+        /* Rimosso stili per badge-item, img, badge-images-row, p */
 
-        .badge-item img {
-            max-width: 150px; /* Dimensione massima per le immagini dei badge */
-            height: auto;
-            margin: 0 auto 10px auto; /* Centra l'immagine orizzontalmente e aggiunge spazio sotto */
-            border-radius: 4px;
-        }
-
-        .badge-item p {
-            font-size: 1em;
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.5;
-            text-align: left; /* Allinea il testo descrittivo a sinistra */
-        }
-
-
-         /* Aggiustamenti Responsivi Minori */
+         /* Media Query per gestire la responsività generale su schermi più piccoli */
         @media (max-width: 600px) {
+             /* Aggiustamenti generali per la pagina badge su schermi piccoli */
             .page-content {
                 margin-top: 60px; /* Riduci spazio dall'alto su schermi piccoli */
                 padding: 15px;
@@ -66,38 +50,28 @@
              .page-content h1 {
                 font-size: 1.8em; /* Riduci dimensione titolo */
             }
-             .badge-item img {
-                 max-width: 100px; /* Riduci dimensione badge su schermi piccoli */
-             }
-              .badge-item p {
-                font-size: 0.9em; /* Riduci font size testo badge */
-            }
         }
 
     </style>
 </head>
 <body>
+    {/* Blocco HTML del Menu di Navigazione */}
     <div class="button-container">
         <a href="index.html" class="nav-button">HOME</a>
         <a href="about.html" class="nav-button">ABOUT</a>
         <a href="future.html" class="nav-button">FUTURE</a>
-        <a href="Space_invaders.html" class="nav-button">INVADERS</a> <a href="podcast.html" class="nav-button">PODCAST</a> <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="podcast.html" class="nav-button">PODCAST</a>
+        <a href="badge.html" class="nav-button">BADGE</a>
         <a href="contact.html" class="nav-button">CONTACT</a>
     </div>
 
+    {/* Il canvas per l'animazione di sfondo verrà creato qui da sketch.js */}
+
+    {/* Contenuto specifico della pagina Badge */}
     <div class="page-content">
-        <h1>My Badges</h1> <div class="badge-item">
-            <p>Description of Badge 1: Obtained by completing course X on Platform Y.</p> </div>
+        <h1>My Badges</h1>
 
-        <div class="badge-item">
-             <p>Description of Badge 2: Recognition for participation in event Z.</p> </div>
+    </div>
 
-        {/* Rimosso il Badge 3 */}
-        {/* <div class="badge-item">
-             <p>Description of Badge 3: Recognition for participation in event Z.</p>
-        </div> */}
-
-        </div>
-
-    </body>
+</body>
 </html>
