@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Invaders</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #gameContainer {
+            border: 2px solid #0f0;
+            position: relative;
+            box-shadow: 0 0 20px #0f0;
+            background-color: #000;
+            touch-action: none; /* Disabilita lo zoom con doppio tocco, ecc. */
+        }
+        canvas {
+            display: block;
+            background-color: #000;
+        }
+        #controls {
+            display: none; /* Nascosto per desktop, mostrato per mobile */
+            margin-top: 15px;
+            text-align: center;
+        }
+        .control-button {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #222;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 10px 15px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 0 10px #0f0;
+            user-select: none; /* Impedisce la selezione del testo sui pulsanti */
+        }
+        .control-button:active {
+            background-color: #0f0;
+            color: #000;
+        }
+        #scoreBoard {
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-align: center;
+            width: 100%;
+        }
+        #messageBox {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 20, 0, 0.9);
+            color: #0f0;
+            padding: 30px;
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+            display: none; /* Nascosto di default */
+            box-shadow: 0 0 20px #0f0;
+        }
+        #messageBox h2 {
+            margin-top: 0;
+            font-size: 24px;
+        }
+        #messageBox p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        #messageBox button {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+         /* Stile per i pulsanti di controllo touch */
+        #touchControls {
+            display: none; /* Nascosto di default, mostrato su touch */
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            z-index: 50;
+        }
+
+        .touch-button-group {
+            display: flex;
+        }
+
+        .touch-button {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #1a1a1a;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 15px;
+            margin: 0 5px;
+            border-radius: 8px;
+            font-size: 20px; /* Più grande per il tocco */
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 0 8px #0f0;
+            min-width: 60px; /* Dimensione minima per il tocco */
+            text-align: center;
+        }
+        .touch-button:active {
+            background-color: #0f0;
+            color: #000;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="scoreBoard">PUNTEGGIO: <span id="score">0</span> VITE: <span id="lives">3</span> LIVELLO: <span id="level">1</span></div>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="messageBox">
+            <h2 id="messageTitle"></h2>
+            <p id="messageText"></p>
+            <button id="messageButton">OK</button>
+        </div>
+    </div>
+    <div id="touchControls">
+        <div class="touch-button-group">
+            <button class="touch-button" id="touchLeft">SIN</button>
+            <button class="touch-button" id="touchRight">DES</button>
+        </div>
+        <button class="touch-button" id="touchShoot">FUOCO</button>
+    </div>
+
+    <script>
+        // Attende il caricamento completo della finestra prima di avviare il gioco
+        window.onload = function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreElement = document.getElementById('score');
+            const livesElement = document.getElementById('lives');
+            const levelElement = document.getElementById('level');
+
+            const messageBox = document.getElementById('messageBox');
+            const messageTitle = document.getElementById('messageTitle');
+            const messageText = document.getElementById('messageText');
+            const messageButton = document.getElementById('messageButton');
+
+            const touchControls = document.getElementById('touchControls');
+            const touchLeftButton = document.getElementById('touchLeft');
+            const touchRightButton = document.getElementById('touchRight');
+            const touchShootButton = document.getElementById('touchShoot');
+
+            let canvasWidth, canvasHeight;
+
+            // Suoni di gioco usando Tone.js
+            const synth = new Tone.Synth().toDestination();
+            const metalSynth = new Tone.MetalSynth({
+                frequency: 50,
+                envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
+                harmonicity: 3.1,
+                modulationIndex: 16,
+                resonance: 2000,
+                octaves: 0.5
+            }).toDestination();
+
+            function playSound(note, duration) {
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                synth.triggerAttackRelease(note, duration);
+            }
+
+            function playExplosionSound() {
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                metalSynth.triggerAttackRelease("8n");
+            }
+
+
+            // Impostazioni del giocatore
+            const player = {
+                x: 0, // Sarà centrato in resizeCanvas
+                y: 0, // Sarà posizionato in basso in resizeCanvas
+                width: 50,
+                height: 20,
+                color: '#0f0', // Verde brillante
+                speed: 7,
+                dx: 0, // Direzione del movimento
+                lives: 3,
+                score: 0,
+                level: 1
+            };
+
+            // Impostazioni dei proiettili
+            const bullet = {
+                width: 5,
+                height: 15,
+                color: '#ff0', // Giallo
+                speed: 10,
+                active: false
+            };
+            let playerBullets = [];
+
+            // Impostazioni degli invasori
+            const invaderSettings = {
+                width: 35,
+                height: 25,
+                padding: 10,
+                color: '#f0f', // Magenta
+                bulletColor: '#0ff', // Ciano per i proiettili nemici
+                bulletSpeed: 5,
+                shootChance: 0.002 // Probabilità che un invasore spari in ogni frame
+            };
+            let invaders = [];
+            let invaderDirection = 1; // 1 per destra, -1 per sinistra
+            let invaderSpeed = 0.5;
+            let invaderDropDistance = 20;
+            let invaderRows = 3;
+            let invaderCols = 8;
+
+            // Impostazioni dei ripari (opzionale, per ora semplice)
+            const barrierSettings = {
+                width: 60,
+                height: 30,
+                color: '#00f', // Blu
+                count: 4
+            };
+            let barriers = [];
+
+            let keys = {};
+            let gameOver = false;
+            let gamePaused = false;
+            let gameStarted = false;
+
+            // Funzione per disegnare il giocatore
+            function drawPlayer() {
+                ctx.fillStyle = player.color;
+                // Disegna una forma simile a un'astronave
+                ctx.beginPath();
+                ctx.moveTo(player.x + player.width / 2, player.y);
+                ctx.lineTo(player.x, player.y + player.height);
+                ctx.lineTo(player.x + player.width, player.y + player.height);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Funzione per disegnare i proiettili
+            function drawBullets() {
+                playerBullets.forEach(b => {
+                    if (b.active) {
+                        ctx.fillStyle = bullet.color;
+                        ctx.fillRect(b.x, b.y, bullet.width, bullet.height);
+                    }
+                });
+
+                invaders.forEach(invaderRow => {
+                    invaderRow.forEach(invader => {
+                        if (invader.bullet && invader.bullet.active) {
+                            ctx.fillStyle = invaderSettings.bulletColor;
+                            ctx.fillRect(invader.bullet.x, invader.bullet.y, bullet.width, bullet.height);
+                        }
+                    });
+                });
+            }
+
+            // Funzione per disegnare gli invasori
+            function drawInvaders() {
+                invaders.forEach(invaderRow => {
+                    invaderRow.forEach(invader => {
+                        if (invader.alive) {
+                            ctx.fillStyle = invaderSettings.color;
+                            // Disegna una forma semplice per l'invasore (rettangolo)
+                            // Potrebbe essere sostituita con SVG o emoji per un aspetto migliore
+                            ctx.fillRect(invader.x, invader.y, invaderSettings.width, invaderSettings.height);
+
+                            // Aggiungi piccoli "occhi" o dettagli
+                            ctx.fillStyle = '#fff'; // Bianco per gli occhi
+                            ctx.fillRect(invader.x + invaderSettings.width * 0.2, invader.y + invaderSettings.height * 0.2, 5, 5);
+                            ctx.fillRect(invader.x + invaderSettings.width * 0.6, invader.y + invaderSettings.height * 0.2, 5, 5);
+                        }
+                    });
+                });
+            }
+
+            // Funzione per disegnare i ripari
+            function drawBarriers() {
+                ctx.fillStyle = barrierSettings.color;
+                barriers.forEach(barrier => {
+                    if (barrier.health > 0) {
+                         // Disegna il riparo come un rettangolo semplice
+                        ctx.fillRect(barrier.x, barrier.y, barrier.width, barrier.height * (barrier.health / 100)); // L'altezza si riduce con i danni
+                    }
+                });
+            }
+
+            // Funzione per creare gli invasori
+            function createInvaders() {
+                invaders = [];
+                const startX = (canvasWidth - (invaderCols * (invaderSettings.width + invaderSettings.padding))) / 2;
+                const startY = 50;
+                for (let r = 0; r < invaderRows; r++) {
+                    invaders[r] = [];
+                    for (let c = 0; c < invaderCols; c++) {
+                        invaders[r][c] = {
+                            x: startX + c * (invaderSettings.width + invaderSettings.padding),
+                            y: startY + r * (invaderSettings.height + invaderSettings.padding),
+                            alive: true,
+                            bullet: null // Ogni invasore può avere un proiettile
+                        };
+                    }
+                }
+            }
+
+             // Funzione per creare i ripari
+            function createBarriers() {
+                barriers = [];
+                const totalBarriersWidth = barrierSettings.count * barrierSettings.width + (barrierSettings.count - 1) * 50; // 50 è lo spazio tra i ripari
+                const startX = (canvasWidth - totalBarriersWidth) / 2;
+                const barrierY = canvasHeight - player.height - 80; // Posiziona i ripari sopra il giocatore
+
+                for (let i = 0; i < barrierSettings.count; i++) {
+                    barriers.push({
+                        x: startX + i * (barrierSettings.width + 50),
+                        y: barrierY,
+                        width: barrierSettings.width,
+                        height: barrierSettings.height,
+                        health: 100 // Salute del riparo (es. 100%)
+                    });
+                }
+            }
+
+
+            // Aggiorna la posizione del giocatore
+            function updatePlayer() {
+                player.x += player.dx;
+
+                // Limita il movimento del giocatore all'interno del canvas
+                if (player.x < 0) player.x = 0;
+                if (player.x + player.width > canvasWidth) player.x = canvasWidth - player.width;
+            }
+
+            // Aggiorna la posizione dei proiettili
+            function updateBullets() {
+                playerBullets.forEach((b, index) => {
+                    if (b.active) {
+                        b.y -= bullet.speed;
+                        if (b.y < 0) {
+                            b.active = false; // Rimuovi proiettile se esce dallo schermo
+                        }
+                    }
+                });
+                playerBullets = playerBullets.filter(b => b.active); // Rimuovi proiettili inattivi
+
+                // Aggiorna proiettili nemici
+                invaders.forEach(invaderRow => {
+                    invaderRow.forEach(invader => {
+                        if (invader.bullet && invader.bullet.active) {
+                            invader.bullet.y += invaderSettings.bulletSpeed;
+                            if (invader.bullet.y > canvasHeight) {
+                                invader.bullet.active = false;
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Aggiorna la posizione degli invasori
+            function updateInvaders() {
+                let moveDown = false;
+                for (let r = 0; r < invaderRows; r++) {
+                    for (let c = 0; c < invaderCols; c++) {
+                        const invader = invaders[r][c];
+                        if (invader.alive) {
+                            invader.x += invaderSpeed * invaderDirection;
+                            if (invader.x + invaderSettings.width > canvasWidth || invader.x < 0) {
+                                moveDown = true;
+                            }
+                            // Controlla se gli invasori raggiungono il giocatore
+                            if (invader.y + invaderSettings.height >= player.y) {
+                                triggerGameOver("Gli invasori hanno raggiunto la Terra!");
+                                return;
+                            }
+
+                            // Logica di sparo degli invasori
+                            if (Math.random() < invaderSettings.shootChance && (!invader.bullet || !invader.bullet.active)) {
+                                // Solo gli invasori in prima linea (o quelli senza altri sotto) dovrebbero sparare
+                                let canShoot = true;
+                                if (r < invaderRows -1) { // Se non è l'ultima riga
+                                    // Controlla se c'è un invasore vivo direttamente sotto
+                                    if (invaders[r+1][c].alive) {
+                                        canShoot = false;
+                                    }
+                                }
+
+                                if (canShoot) {
+                                    invader.bullet = {
+                                        x: invader.x + invaderSettings.width / 2 - bullet.width / 2,
+                                        y: invader.y + invaderSettings.height,
+                                        active: true
+                                    };
+                                    playSound("C3", "8n"); // Suono sparo nemico
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (moveDown) {
+                    invaderDirection *= -1; // Cambia direzione
+                    for (let r = 0; r < invaderRows; r++) {
+                        for (let c = 0; c < invaderCols; c++) {
+                            invaders[r][c].y += invaderDropDistance;
+                        }
+                    }
+                }
+            }
+
+            // Rilevamento collisioni
+            function checkCollisions() {
+                // Proiettili del giocatore vs Invasori
+                playerBullets.forEach(b => {
+                    if (b.active) {
+                        for (let r = 0; r < invaderRows; r++) {
+                            for (let c = 0; c < invaderCols; c++) {
+                                const invader = invaders[r][c];
+                                if (invader.alive &&
+                                    b.x < invader.x + invaderSettings.width &&
+                                    b.x + bullet.width > invader.x &&
+                                    b.y < invader.y + invaderSettings.height &&
+                                    b.y + bullet.height > invader.y) {
+                                    invader.alive = false;
+                                    b.active = false;
+                                    player.score += 10;
+                                    updateScoreboard();
+                                    playExplosionSound();
+
+                                    // Controlla se tutti gli invasori sono stati sconfitti
+                                    if (areAllInvadersDefeated()) {
+                                        nextLevel();
+                                    }
+                                    return; // Esci dopo una collisione per evitare doppi colpi
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Proiettili degli invasori vs Giocatore
+                invaders.forEach(invaderRow => {
+                    invaderRow.forEach(invader => {
+                        if (invader.bullet && invader.bullet.active) {
+                            if (invader.bullet.x < player.x + player.width &&
+                                invader.bullet.x + bullet.width > player.x &&
+                                invader.bullet.y < player.y + player.height &&
+                                invader.bullet.y + bullet.height > player.y) {
+                                invader.bullet.active = false;
+                                player.lives--;
+                                playExplosionSound(); // Suono danno al giocatore
+                                updateScoreboard();
+                                if (player.lives <= 0) {
+                                    triggerGameOver("Sei stato abbattuto!");
+                                } else {
+                                    // Breve invincibilità o reset posizione (opzionale)
+                                    // Per ora, solo perdita di una vita
+                                }
+                                return;
+                            }
+                        }
+                    });
+                });
+
+                // Proiettili (giocatore e nemici) vs Ripari
+                const allBullets = [...playerBullets];
+                invaders.forEach(r => r.forEach(inv => { if (inv.bullet && inv.bullet.active) allBullets.push(inv.bullet); }));
+
+                allBullets.forEach(b => {
+                    if (b.active) {
+                        barriers.forEach(barrier => {
+                            if (barrier.health > 0 &&
+                                b.x < barrier.x + barrier.width &&
+                                b.x + bullet.width > barrier.x &&
+                                b.y < barrier.y + barrier.height &&
+                                b.y + bullet.height > barrier.y) {
+                                b.active = false; // Il proiettile viene distrutto
+                                barrier.health -= 25; // Ogni colpo danneggia il riparo
+                                if (barrier.health <= 0) {
+                                    // Il riparo è distrutto, potrebbe scomparire o diventare inefficace
+                                    // Per ora, semplicemente non viene più disegnato se health <= 0
+                                    playExplosionSound();
+                                }
+                            }
+                        });
+                    }
+                });
+
+
+                // Invasori vs Ripari (se un invasore tocca un riparo, lo danneggia/distrugge)
+                invaders.forEach(invaderRow => {
+                    invaderRow.forEach(invader => {
+                        if (invader.alive) {
+                            barriers.forEach(barrier => {
+                                if (barrier.health > 0 &&
+                                    invader.x < barrier.x + barrier.width &&
+                                    invader.x + invaderSettings.width > barrier.x &&
+                                    invader.y + invaderSettings.height > barrier.y && // Controlla la parte inferiore dell'invasore
+                                    invader.y < barrier.y + barrier.height) { // Controlla la parte superiore dell'invasore
+                                    barrier.health = 0; // L'invasore distrugge il riparo istantaneamente
+                                    playExplosionSound();
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+
+            function areAllInvadersDefeated() {
+                for (let r = 0; r < invaderRows; r++) {
+                    for (let c = 0; c < invaderCols; c++) {
+                        if (invaders[r][c].alive) {
+                            return false; // C'è almeno un invasore vivo
+                        }
+                    }
+                }
+                return true; // Tutti gli invasori sono stati sconfitti
+            }
+
+            function nextLevel() {
+                player.level++;
+                player.score += 100 * (player.level -1); // Bonus per il livello
+                showMessage(`Livello ${player.level}!`, `Preparati per la prossima ondata!`, () => {
+                    invaderSpeed += 0.2; // Aumenta la velocità degli invasori
+                    invaderSettings.shootChance += 0.0005; // Aumenta la frequenza di sparo
+                    if (invaderRows < 5) invaderRows++; // Aggiungi più righe se non troppe
+                    resetLevel();
+                });
+            }
+
+
+            // Aggiorna il tabellone
+            function updateScoreboard() {
+                scoreElement.textContent = player.score;
+                livesElement.textContent = player.lives;
+                levelElement.textContent = player.level;
+            }
+
+            // Pulisce il canvas
+            function clearCanvas() {
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            }
+
+            // Funzione di disegno principale
+            function draw() {
+                clearCanvas();
+                drawPlayer();
+                drawInvaders();
+                drawBullets();
+                drawBarriers();
+            }
+
+            // Loop di gioco principale
+            function gameLoop() {
+                if (gameOver || gamePaused || !gameStarted) {
+                    if (gameOver && !messageBox.style.display || messageBox.style.display === 'none') {
+                         // Assicura che il messaggio di game over sia mostrato
+                        if (player.lives <= 0) {
+                            showMessage("GAME OVER", `Punteggio Finale: ${player.score}. Premi OK per riprovare.`);
+                        } else {
+                             // Potrebbe essere una vittoria se implementata
+                        }
+                    }
+                    requestAnimationFrame(gameLoop); // Continua a chiamare per input anche se in pausa/game over
+                    return;
+                }
+
+                updatePlayer();
+                updateInvaders();
+                updateBullets();
+                checkCollisions();
+                draw();
+
+                requestAnimationFrame(gameLoop);
+            }
+
+            // Gestione input da tastiera
+            function keyDown(e) {
+                keys[e.key] = true;
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                    player.dx = -player.speed;
+                } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                    player.dx = player.speed;
+                } else if ((e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && playerBullets.length < 3) { // Limita i proiettili a 3
+                    shoot();
+                } else if (e.key === 'p' || e.key === 'P') {
+                    togglePause();
+                }
+            }
+
+            function keyUp(e) {
+                keys[e.key] = false;
+                if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && player.dx < 0) {
+                    player.dx = 0;
+                } else if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && player.dx > 0) {
+                    player.dx = 0;
+                }
+            }
+
+            // Funzione di sparo
+            function shoot() {
+                if (!gameStarted || gameOver || gamePaused) return;
+
+                // Trova o crea un proiettile inattivo
+                let currentBullet = playerBullets.find(b => !b.active);
+                if (!currentBullet && playerBullets.length < 5) { // Limita il numero totale di proiettili attivi e non
+                    currentBullet = { x: 0, y: 0, active: false };
+                    playerBullets.push(currentBullet);
+                }
+
+                if (currentBullet && !currentBullet.active) {
+                    currentBullet.x = player.x + player.width / 2 - bullet.width / 2;
+                    currentBullet.y = player.y - bullet.height;
+                    currentBullet.active = true;
+                    playSound("C5", "16n"); // Suono sparo giocatore
+                }
+            }
+
+            function resetLevel() {
+                player.x = canvasWidth / 2 - player.width / 2;
+                player.y = canvasHeight - player.height - 10;
+                playerBullets = [];
+                createInvaders();
+                createBarriers(); // Ricrea anche i ripari
+                updateScoreboard();
+                gameOver = false;
+                gamePaused = false;
+            }
+
+            function resetGame() {
+                player.lives = 3;
+                player.score = 0;
+                player.level = 1;
+                invaderSpeed = 0.5;
+                invaderSettings.shootChance = 0.002;
+                invaderRows = 3;
+                resetLevel();
+                gameStarted = true; // Il gioco inizia dopo il reset
+            }
+
+            function triggerGameOver(reason) {
+                if (gameOver) return; // Evita di chiamare più volte
+                gameOver = true;
+                gameStarted = false;
+                playSound("A2", "1n"); // Suono di game over
+                showMessage("GAME OVER", `${reason} Punteggio Finale: ${player.score}. Premi OK per riprovare.`);
+            }
+
+            function showMessage(title, text, callback) {
+                messageTitle.textContent = title;
+                messageText.textContent = text;
+                messageBox.style.display = 'block';
+                gamePaused = true; // Metti in pausa il gioco quando il messaggio è attivo
+
+                messageButton.onclick = () => {
+                    messageBox.style.display = 'none';
+                    gamePaused = false;
+                    if (callback) {
+                        callback();
+                    }
+                    if (gameOver) { // Se era un game over, resetta il gioco
+                        resetGame();
+                    }
+                    if (!gameStarted && title.toLowerCase().includes("benvenuto")) {
+                        startGame();
+                    }
+                };
+            }
+
+            function togglePause() {
+                if (gameOver || !gameStarted) return;
+                gamePaused = !gamePaused;
+                if (gamePaused) {
+                    showMessage("PAUSA", "Il gioco è in pausa. Premi OK per continuare.", () => gamePaused = false);
+                } else {
+                    messageBox.style.display = 'none'; // Nascondi se era visibile
+                }
+            }
+
+
+            function resizeCanvas() {
+                const gameContainer = document.getElementById('gameContainer');
+                const scoreboardHeight = document.getElementById('scoreBoard').offsetHeight;
+                const touchControlsHeight = isTouchDevice() ? document.getElementById('touchControls').offsetHeight + 20 : 0; // Aggiungi un po' di margine
+
+                // Calcola la larghezza e l'altezza massime disponibili
+                let maxWidth = window.innerWidth * 0.95;
+                let maxHeight = (window.innerHeight - scoreboardHeight - touchControlsHeight) * 0.95;
+
+                // Mantenere un rapporto d'aspetto (es. 4:3 o 16:9, qui usiamo circa 1.5:1)
+                const aspectRatio = 1.5; // width / height
+
+                if (maxWidth / maxHeight > aspectRatio) { // Se lo schermo è più largo del rapporto
+                    canvasHeight = maxHeight;
+                    canvasWidth = canvasHeight * aspectRatio;
+                } else { // Se lo schermo è più alto del rapporto
+                    canvasWidth = maxWidth;
+                    canvasHeight = canvasWidth / aspectRatio;
+                }
+
+                // Limiti minimi per la giocabilità
+                canvasWidth = Math.max(canvasWidth, 300);
+                canvasHeight = Math.max(canvasHeight, 200);
+
+
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+                gameContainer.style.width = canvasWidth + 'px';
+                gameContainer.style.height = canvasHeight + 'px';
+
+                // Riposiziona il giocatore dopo il ridimensionamento
+                player.x = canvasWidth / 2 - player.width / 2;
+                player.y = canvasHeight - player.height - 10;
+
+                // Riposiziona/ricrea elementi dipendenti dalla dimensione del canvas
+                if (gameStarted || gameOver) { // Solo se il gioco è iniziato o finito
+                    createInvaders(); // Ricrea gli invasori per adattarli alla nuova dimensione
+                    createBarriers(); // Ricrea i ripari
+                }
+                draw(); // Ridisegna tutto
+            }
+
+            function isTouchDevice() {
+                return (('ontouchstart' in window) ||
+                    (navigator.maxTouchPoints > 0) ||
+                    (navigator.msMaxTouchPoints > 0));
+            }
+
+
+            function setupTouchControls() {
+                if (isTouchDevice()) {
+                    touchControls.style.display = 'flex';
+
+                    touchLeftButton.addEventListener('touchstart', (e) => { e.preventDefault(); player.dx = -player.speed; });
+                    touchLeftButton.addEventListener('touchend', (e) => { e.preventDefault(); if (player.dx < 0) player.dx = 0; });
+
+                    touchRightButton.addEventListener('touchstart', (e) => { e.preventDefault(); player.dx = player.speed; });
+                    touchRightButton.addEventListener('touchend', (e) => { e.preventDefault(); if (player.dx > 0) player.dx = 0; });
+
+                    touchShootButton.addEventListener('touchstart', (e) => { e.preventDefault(); shoot(); });
+                } else {
+                    touchControls.style.display = 'none';
+                }
+            }
+
+            function startGame() {
+                gameStarted = true;
+                gameOver = false;
+                gamePaused = false;
+                resetGame(); // Inizia il gioco con le impostazioni di default
+                gameLoop();
+            }
+
+            // Event listeners
+            window.addEventListener('keydown', keyDown);
+            window.addEventListener('keyup', keyUp);
+            window.addEventListener('resize', resizeCanvas);
+
+
+            // Inizializzazione
+            setupTouchControls();
+            resizeCanvas(); // Chiamata iniziale per impostare le dimensioni
+            showMessage(
+                "Benvenuto a Space Invaders!",
+                "Usa i tasti freccia (o A/D) per muoverti, Spazio (o W/Freccia Su) per sparare. 'P' per la pausa. Distruggi tutti gli invasori!",
+                () => {
+                    startGame();
+                }
+            );
+            // Non chiamare gameLoop() qui, verrà chiamato dopo che l'utente chiude il messaggio di benvenuto
+        };
+
+    </script>
+</body>
+</html>

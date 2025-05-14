@@ -11,7 +11,8 @@
         <a href="index.html" class="nav-button">HOME</a>
         <a href="about.html" class="nav-button">ABOUT</a>
         <a href="future.html" class="nav-button">FUTURE</a>
-        <a href="podcast.html" class="nav-button">PODCAST</a> <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="Space_invaders.html" class="nav-button">INVADERS</a> <a href="podcast.html" class="nav-button">PODCAST</a>
+        <a href="badge.html" class="nav-button">BADGE</a>
         <a href="contact.html" class="nav-button">CONTACT</a>
     </div>
 
@@ -35,6 +36,10 @@
             </div>
 
             <div>
+                <label for="files">Attach Files:</label> <input type="file" id="files" name="files" multiple>
+            </div>
+
+            <div>
                 <button type="submit">Send Message</button> </div>
 
             <div id="formStatusMessage" style="margin-top: 15px; text-align: center; font-weight: bold;"></div>
@@ -46,26 +51,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             const contactForm = document.getElementById('contactForm');
             const formStatusMessage = document.getElementById('formStatusMessage');
-
-            // *** URL DELLA TUA FUNZIONE SERVERLESS PYTHON SU VERCEL PER L'INVIO EMAIL ***
-            // Usiamo window.location.origin per ottenere la parte base dell'URL
-            // della pagina corrente (es. https://[deployment-id].vercel.app o https://tuo-domino.com)
-            // e aggiungiamo il percorso alla tua API di invio email.
-            const API_ENDPOINT_PATH = '/api/send-email'; // <--- Assicurati che questo percorso sia corretto (nome della cartella + index.py)
-            const SEND_EMAIL_API_URL = window.location.origin + API_ENDPOINT_PATH;
-
-            console.log("Send Email API URL being called:", SEND_EMAIL_API_URL); // Log per debug
-
-            // Controlla che gli elementi HTML necessari esistano
-            if (!contactForm || !formStatusMessage) {
-                console.error("Elementi HTML per il form di contatto non trovati. La funzionalità di invio email non sarà attiva.");
-                return; // Esci dalla funzione se non trovi gli elementi
-            }
-
+            const submitButton = contactForm.querySelector('button[type="submit"]'); // Trova il bottone di submit
 
             // Aggiungi un ascoltatore per l'evento 'submit' del form
             contactForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Impedisce l'invio standard del form (ricaricamento pagina)
+                // Impedisci l'invio standard del form che causerebbe il ricaricamento della pagina
+                event.preventDefault();
 
                 // Resetta il messaggio di stato
                 formStatusMessage.textContent = '';
@@ -73,53 +64,66 @@
 
                 // Raccogli i dati del form
                 const formData = new FormData(contactForm);
-                const jsonData = {};
+                // Puoi convertire FormData in un oggetto JSON se preferisci inviarlo così
+                const formDataJson = {};
                 formData.forEach((value, key) => {
-                    jsonData[key] = value;
+                     // Gestisci i file separatamente se necessario, per ora li ignoriamo nel JSON
+                     if (key !== 'files') {
+                        formDataJson[key] = value;
+                     }
                 });
 
-                // Mostra un messaggio di caricamento e disabilita il bottone
-                const submitButton = contactForm.querySelector('button[type="submit"]');
-                submitButton.textContent = 'Sending...'; // Testo bottone in inglese
-                submitButton.disabled = true;
+                // *** SIMULAZIONE DELL'INVIO ***
+                // In un'applicazione reale, qui useresti `fetch` per inviare
+                // `formData` o `formDataJson` a una tua API serverless.
+                // Esempio (commentato):
+                /*
+                const YOUR_CONTACT_API_URL = 'https://your-vercel-project.vercel.app/api/contact'; // <-- URL della tua API per il contatto
 
                 try {
-                    // Fai la chiamata HTTP (fetch) alla tua funzione serverless
-                    const response = await fetch(SEND_EMAIL_API_URL, {
+                    const response = await fetch(YOUR_CONTACT_API_URL, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json' // O 'application/x-www-form-urlencoded' o lasciare FormData per i file
                         },
-                        body: JSON.stringify(jsonData) // Invia i dati del form come JSON
+                        body: JSON.stringify(formDataJson) // Invia come JSON
+                        // Oppure: body: formData // Per inviare con i file
                     });
+
+                    if (!response.ok) {
+                        throw new Error(`Errore HTTP: ${response.status}`);
+                    }
 
                     const result = await response.json(); // Assumi che la tua API risponda con JSON
 
-                    if (response.ok) { // Controlla se la risposta HTTP è OK (200-299)
-                        if (result.success) {
-                            formStatusMessage.textContent = result.message || 'Message sent successfully!'; // Messaggio di successo in inglese
-                            formStatusMessage.style.color = 'lightgreen';
-                            contactForm.reset(); // Svuota il form se l'invio è riuscito
-                        } else {
-                            // Se la risposta HTTP è OK ma il backend segnala un errore logico
-                            formStatusMessage.textContent = result.message || 'Error sending message.'; // Messaggio di errore in inglese
-                            formStatusMessage.style.color = 'salmon';
-                             console.error('Backend reported failure:', result.message);
-                        }
+                    // Gestisci la risposta (mostra messaggio di successo o errore)
+                    if (result.success) { // Assumi che la tua API restituisca { success: true } in caso di successo
+                        formStatusMessage.textContent = 'Messaggio inviato con successo!';
+                        formStatusMessage.className = 'status-message status-success'; // Applica classe per lo stile
+                        contactForm.reset(); // Resetta il form dopo l'invio riuscito
                     } else {
-                        // Se c'è stato un errore HTTP (es. 400, 500)
-                        const errorBody = result.message || await response.text(); // Prova a leggere il messaggio di errore dal JSON o dal testo
-                        throw new Error(`Backend HTTP error: ${response.status} ${response.statusText} - ${errorBody}`);
+                        // Assumi che la tua API restituisca { success: false, error: "..." } in caso di errore
+                        formStatusMessage.textContent = `Errore nell'invio: ${result.error || 'Errore sconosciuto'}`;
+                        formStatusMessage.className = 'status-message status-error'; // Applica classe per lo stile
                     }
 
                 } catch (error) {
-                    console.error('Error submitting form:', error);
-                    formStatusMessage.textContent = `Error: ${error.message || 'Could not send message.'}`; // Messaggio di errore in inglese
-                    formStatusMessage.style.color = 'red';
+                    console.error('Errore durante l\'invio del form:', error);
+                    formStatusMessage.textContent = `Errore di connessione: ${error.message}`;
+                    formStatusMessage.className = 'status-message status-error'; // Applica classe per lo stile
                 } finally {
-                    submitButton.textContent = 'Send Message'; // Ripristina il testo del bottone in inglese
-                    submitButton.disabled = false; // Riabilita il bottone
+                     submitButton.disabled = false; // Riabilita il bottone
                 }
+                */
+
+                // --- Codice di simulazione (RIMUOVI QUANDO IMPLEMENTI L'API REALE) ---
+                console.log('Dati form (simulazione invio):', formDataJson); // Stampa i dati nella console
+                formStatusMessage.textContent = 'Form submitted (simulation)'; // Messaggio di conferma simulato
+                formStatusMessage.className = 'status-message status-success'; // Stile di successo simulato
+                // contactForm.reset(); // Rimuovi il commento se vuoi resettare il form anche nella simulazione
+                 submitButton.disabled = false; // Riabilita il bottone
+                // --- Fine Codice di simulazione ---
+
             });
         });
     </script>

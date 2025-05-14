@@ -134,4 +134,3 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   // Il testo si riposizionerà automaticamente grazie all'uso di 'height' e 'width'
 }
-
