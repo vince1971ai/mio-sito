@@ -21,7 +21,7 @@
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
             color: #fff;
-            text-align: center; /* Centra il titolo */
+            text-align: center; /* Centra il titolo e il contenuto interno come l'immagine */
         }
 
         .page-content h1 {
@@ -31,7 +31,14 @@
             margin-bottom: 30px; /* Spazio sotto il titolo */
         }
 
-        /* Rimosso stili per badge-item, img, badge-images-row, p */
+        /* Stile per centrare l'immagine */
+        .page-content img {
+            display: block; /* L'immagine diventa un elemento a blocco */
+            margin: 0 auto; /* I margini auto centrano l'elemento a blocco */
+            max-width: 100%; /* Rende l'immagine responsive */
+            height: auto;
+        }
+
 
          /* Media Query per gestire la responsività generale su schermi più piccoli */
         @media (max-width: 600px) {
@@ -58,7 +65,9 @@
     </div>
 
     <div class="page-content">
-        <h1>My Badges</h1> </div>
+        <h1>My Badges</h1>
+        <img src="images/badge.JPG" alt="Badge Image">
+    </div>
 
 </body>
 </html>
