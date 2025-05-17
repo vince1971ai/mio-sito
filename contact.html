@@ -1,57 +1,24 @@
-<!DOCTYPE html>
-<html lang="en"> <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact - Nik Tesla AI</title> <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
-    <script src="sketch.js"></script>
-    </head>
-<body>
-    <div class="button-container">
-        <a href="index.html" class="nav-button">HOME</a>
-        <a href="about.html" class="nav-button">ABOUT</a>
-        <a href="future.html" class="nav-button">FUTURE</a>
-        <a href="Space_invaders.html" class="nav-button">INVADERS</a> <a href="podcast.html" class="nav-button">PODCAST</a>
-        <a href="badge.html" class="nav-button">BADGE</a>
-        <a href="contact.html" class="nav-button">CONTACT</a>
-    </div>
-
-    <div class="form-container">
-        <h1>Contact Us</h1> <form id="contactForm" class="contact-form">
-
-            <div>
-                <label for="name" class="required">Name:</label> <input type="text" id="name" name="name" required>
-            </div>
-
-            <div>
-                <label for="email" class="required">Email:</label> <input type="email" id="email" name="email" required>
-            </div>
-
-            <div>
-                <label for="message">Message:</label> <textarea id="message" name="message" maxlength="200"></textarea>
-            </div>
-
-            <div>
-                 <label for="website">Website:</label> <input type="url" id="website" name="website">
-            </div>
-
-            <div>
-                <label for="files">Attach Files:</label> <input type="file" id="files" name="files" multiple>
-            </div>
-
-            <div>
-                <button type="submit">Send Message</button> </div>
-
-            <div id="formStatusMessage" style="margin-top: 15px; text-align: center; font-weight: bold;"></div>
-
-        </form>
-    </div>
-
-    <script>
+<script>
         document.addEventListener('DOMContentLoaded', () => {
             const contactForm = document.getElementById('contactForm');
             const formStatusMessage = document.getElementById('formStatusMessage');
             const submitButton = contactForm.querySelector('button[type="submit"]'); // Trova il bottone di submit
+
+            // *** CONFIGURA QUESTI VALORI CON I TUOI DATI SUPABASE ***
+            const SUPABASE_URL = 'https://ppmymwdjdvcsrfawpeqi.supabase.co'; // <-- Incolla qui il tuo Project URL di Supabase
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbXltd2RqZHZjc3JmYXdwZXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NzUxOTMsImV4cCI6MjA2MzA1MTE5M30.MTjtLfYQv-ztDg1t4YZQmqwrPKzfTKyY0CPWKTEEKrc'; // <-- Incolla qui la tua chiave 'anon' public di Supabase
+            const SUPABASE_TABLE_NAME = 'contact_messages'; // <-- Assicurati che questo sia il nome esatto della tua tabella
+            // ******************************************************
+
+            // Inizializza il client Supabase
+            const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // Controlla che gli elementi HTML necessari esistano
+            if (!contactForm || !formStatusMessage || !submitButton) {
+                console.error("Elementi HTML per il form di contatto non trovati. La funzionalità di invio non sarà attiva.");
+                return; // Esci dalla funzione se non trovi gli elementi
+            }
+
 
             // Aggiungi un ascoltatore per l'evento 'submit' del form
             contactForm.addEventListener('submit', async (event) => {
@@ -60,73 +27,51 @@
 
                 // Resetta il messaggio di stato
                 formStatusMessage.textContent = '';
-                formStatusMessage.style.color = 'white'; // Colore di default
+                formStatusMessage.className = ''; // Rimuovi classi di stato precedenti
 
                 // Raccogli i dati del form
                 const formData = new FormData(contactForm);
-                // Puoi convertire FormData in un oggetto JSON se preferisci inviarlo così
-                const formDataJson = {};
+                // Converti FormData in un oggetto per Supabase
+                const formDataObject = {};
                 formData.forEach((value, key) => {
-                     // Gestisci i file separatamente se necessario, per ora li ignoriamo nel JSON
+                     // Per ora, escludiamo i file dall'oggetto dati inviato a Supabase
                      if (key !== 'files') {
-                        formDataJson[key] = value;
+                        formDataObject[key] = value;
                      }
                 });
 
-                // *** SIMULAZIONE DELL'INVIO ***
-                // In un'applicazione reale, qui useresti `fetch` per inviare
-                // `formData` o `formDataJson` a una tua API serverless.
-                // Esempio (commentato):
-                /*
-                const YOUR_CONTACT_API_URL = 'https://your-vercel-project.vercel.app/api/contact'; // <-- URL della tua API per il contatto
+                // Mostra un messaggio di caricamento e disabilita il bottone
+                submitButton.textContent = 'Sending...'; // Testo bottone in inglese
+                submitButton.disabled = true;
 
                 try {
-                    const response = await fetch(YOUR_CONTACT_API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json' // O 'application/x-www-form-urlencoded' o lasciare FormData per i file
-                        },
-                        body: JSON.stringify(formDataJson) // Invia come JSON
-                        // Oppure: body: formData // Per inviare con i file
-                    });
+                    // Invia i dati a Supabase
+                    const { data, error } = await supabase
+                        .from(SUPABASE_TABLE_NAME) // Specifica la tabella
+                        .insert([formDataObject]); // Inserisci l'oggetto dati (come array con un elemento)
 
-                    if (!response.ok) {
-                        throw new Error(`Errore HTTP: ${response.status}`);
-                    }
-
-                    const result = await response.json(); // Assumi che la tua API risponda con JSON
-
-                    // Gestisci la risposta (mostra messaggio di successo o errore)
-                    if (result.success) { // Assumi che la tua API restituisca { success: true } in caso di successo
-                        formStatusMessage.textContent = 'Messaggio inviato con successo!';
-                        formStatusMessage.className = 'status-message status-success'; // Applica classe per lo stile
-                        contactForm.reset(); // Resetta il form dopo l'invio riuscito
-                    } else {
-                        // Assumi che la tua API restituisca { success: false, error: "..." } in caso di errore
-                        formStatusMessage.textContent = `Errore nell'invio: ${result.error || 'Errore sconosciuto'}`;
+                    if (error) {
+                        // Se Supabase restituisce un errore
+                        console.error('Errore Supabase:', error);
+                        formStatusMessage.textContent = `Error sending message: ${error.message}`; // Messaggio di errore in inglese
                         formStatusMessage.className = 'status-message status-error'; // Applica classe per lo stile
+                    } else {
+                        // Se l'invio a Supabase è riuscito
+                        console.log('Messaggio inviato con successo a Supabase:', data);
+                        formStatusMessage.textContent = 'Message sent successfully!'; // Messaggio di successo in inglese
+                        formStatusMessage.className = 'status-message status-success'; // Applica classe per lo stile
+                        contactForm.reset(); // Svuota il form
                     }
 
                 } catch (error) {
+                    // Gestisce errori di rete o altri errori durante l'esecuzione dello script
                     console.error('Errore durante l\'invio del form:', error);
-                    formStatusMessage.textContent = `Errore di connessione: ${error.message}`;
+                    formStatusMessage.textContent = `Error: ${error.message || 'Could not send message.'}`; // Messaggio di errore in inglese
                     formStatusMessage.className = 'status-message status-error'; // Applica classe per lo stile
                 } finally {
-                     submitButton.disabled = false; // Riabilita il bottone
+                    submitButton.textContent = 'Send Message'; // Ripristina il testo del bottone in inglese
+                    submitButton.disabled = false; // Riabilita il bottone
                 }
-                */
-
-                // --- Codice di simulazione (RIMUOVI QUANDO IMPLEMENTI L'API REALE) ---
-                console.log('Dati form (simulazione invio):', formDataJson); // Stampa i dati nella console
-                formStatusMessage.textContent = 'Form submitted (simulation)'; // Messaggio di conferma simulato
-                formStatusMessage.className = 'status-message status-success'; // Stile di successo simulato
-                // contactForm.reset(); // Rimuovi il commento se vuoi resettare il form anche nella simulazione
-                 submitButton.disabled = false; // Riabilita il bottone
-                // --- Fine Codice di simulazione ---
-
             });
         });
     </script>
-
-</body>
-</html>
