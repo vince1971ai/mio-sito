@@ -152,4 +152,99 @@
         document.addEventListener('DOMContentLoaded', () => {
             const contactForm = document.getElementById('contactForm');
             const formStatusMessage = document.getElementById('formStatusMessage');
-            const submitButton = contactForm
+            const submitButton = contactForm.querySelector('button[type="submit"]');
+
+            // URL della tua funzione serverless per inviare email
+            const SEND_EMAIL_API_URL = window.location.origin + '/api/send-email';
+            // Le tue configurazioni Supabase (lasciale così come sono)
+            const SUPABASE_URL = 'https://ppmymwdjdvcsrfawpeqi.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbXltd2RqZHZjc3JmYXdwZXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NzUxOTMsImV4cCI6MjA2MzA1MTE5M30.MTjtLfYQv-ztDg1t4YZQmqwrPKzfTKyY0CPWKTEEKrc';
+            const SUPABASE_TABLE_NAME = 'contact_messages';
+            const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+            if (!contactForm || !formStatusMessage || !submitButton) {
+                console.error("Elementi HTML per il form di contatto non trovati. La funzionalità non sarà attiva.");
+                return;
+            }
+
+            contactForm.addEventListener('submit', async (event) => {
+                event.preventDefault(); // Impedisce il ricaricamento della pagina
+
+                formStatusMessage.textContent = '';
+                formStatusMessage.className = '';
+                submitButton.textContent = 'Sending...';
+                submitButton.disabled = true;
+
+                const formData = new FormData(contactForm);
+                const formDataObject = {};
+                formData.forEach((value, key) => {
+                     formDataObject[key] = value;
+                });
+
+                let emailSent = false;
+                let supabaseSaved = false;
+                let errorMessage = '';
+
+                try {
+                    // 1. Invia email tramite la funzione serverless SendGrid
+                    const emailResponse = await fetch(SEND_EMAIL_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formDataObject)
+                    });
+
+                    if (!emailResponse.ok) {
+                        const errorBody = await emailResponse.text();
+                        throw new Error(`Email sending failed: ${emailResponse.status} ${emailResponse.statusText} - ${errorBody}`);
+                    }
+                    emailSent = true;
+                    console.log('Email sent successfully via API.');
+
+                } catch (error) {
+                    emailSent = false;
+                    errorMessage += `Email error: ${error.message}. `;
+                    console.error('Error sending email:', error);
+                }
+
+                try {
+                    // 2. Salva su Supabase (logica esistente)
+                    const { data, error } = await supabase
+                        .from(SUPABASE_TABLE_NAME)
+                        .insert([formDataObject]);
+
+                    if (error) {
+                        throw new Error(`Supabase save failed: ${error.message}`);
+                    }
+                    supabaseSaved = true;
+                    console.log('Message saved to Supabase successfully:', data);
+
+                } catch (error) {
+                    supabaseSaved = false;
+                    errorMessage += `Supabase error: ${error.message}.`;
+                    console.error('Error saving to Supabase:', error);
+                }
+
+                if (emailSent && supabaseSaved) {
+                    formStatusMessage.textContent = 'Message sent and saved successfully!';
+                    formStatusMessage.className = 'status-message status-success';
+                    contactForm.reset(); // Solo se tutto va a buon fine
+                } else if (emailSent && !supabaseSaved) {
+                    formStatusMessage.textContent = `Email sent, but failed to save message. ${errorMessage}`;
+                    formStatusMessage.className = 'status-message status-warning';
+                    // Non resetta il form qui, potrebbe esserci bisogno di ritentare il salvataggio o copiare i dati
+                } else if (!emailSent && supabaseSaved) {
+                    formStatusMessage.textContent = `Message saved, but failed to send email. ${errorMessage}`;
+                    formStatusMessage.className = 'status-message status-warning';
+                } else {
+                    formStatusMessage.textContent = `Failed to send message: ${errorMessage}`;
+                    formStatusMessage.className = 'status-message status-error';
+                }
+
+                submitButton.textContent = 'Send Message';
+                submitButton.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
