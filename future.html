@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en"> <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Future - Nik Tesla AI</title>
@@ -103,7 +104,7 @@
             border: 1px dashed rgba(255, 255, 255, 0.3);
             border-radius: 4px;
             background-color: rgba(50, 50, 60, 0.6);
-            color: rgba(200, 255, 200, 0.9); /* Colore per il risultato */
+            color: rgba(200, 200, 255, 0.9); /* Colore per il risultato */
             min-height: 30px;
             font-size: 1.1em;
             text-align: center;
@@ -127,20 +128,25 @@
     </style>
 </head>
 <body>
-    <div class="button-container">
-        <a href="index.html" class="nav-button">HOME</a>
-        <a href="about.html" class="nav-button">ABOUT</a>
-        <a href="future.html" class="nav-button">FUTURE</a>
-        <a href="Space_invaders.html" class="nav-button">INVADERS</a> <a href="podcast.html" class="nav-button">PODCAST</a>
-        <a href="badge.html" class="nav-button">BADGE</a>
-        <a href="contact.html" class="nav-button">CONTACT</a>
-    </div>
-
+    <div id="navbar-placeholder"></div>
+    <script>
+        fetch('nav.html') // Richiede il file nav.html che contiene il menu
+            .then(response => response.text()) // Converte la risposta in testo
+            .then(data => {
+                document.getElementById('navbar-placeholder').innerHTML = data; // Inserisce il contenuto del menu nel placeholder
+            });
+    </script>
     <div class="page-content">
-        <h1>The Future of Nik Tesla AI</h1> <p>Looking to the future, my commitment is to experiment with ever more innovative solutions and build a community of enthusiasts with whom we can grow together. Feel free to explore projects, leave feedback and follow the evolution of this journey into the world of AI: the best is yet to come!</p>
+        <h1>The Future of Nik Tesla AI</h1>
+        <p>Looking to the future, my commitment is to experiment with ever more innovative solutions and build a community of enthusiasts with whom we can grow together. Feel free to explore projects, leave feedback and follow the evolution of this journey into the world of AI: the best is yet to come!</p>
 
         <div class="sentiment-analyzer">
-            <h2>Try the Sentiment Analyzer</h2> <p>Enter a short text below to see how an AI can determine its sentiment (positive, negative, or neutral).</p> <textarea id="sentimentText" placeholder="Write the text to analyze here..."></textarea> <button id="analyzeSentimentButton">Analyze Sentiment</button> <div id="sentimentResult"></div> </div>
+            <h2>Try the Sentiment Analyzer</h2>
+            <p>Enter a short text below to see how an AI can determine its sentiment (positive, negative, or neutral).</p>
+            <textarea id="sentimentText" placeholder="Write the text to analyze here..."></textarea>
+            <button id="analyzeSentimentButton">Analyze Sentiment</button>
+            <div id="sentimentResult"></div>
+        </div>
         <script>
             // Attendi che il DOM sia completamente caricato
             document.addEventListener('DOMContentLoaded', () => {
@@ -237,5 +243,6 @@
             });
         </script>
 
-    </div> </body>
+    </div>
+</body>
 </html>

@@ -1,8 +1,13 @@
 <!DOCTYPE html>
-<html lang="en"> <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Badge - Nik Tesla AI</title> <link rel="stylesheet" href="style.css"> <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script> <script src="sketch.js"></script> <style>
+    <title>Badge - Nik Tesla AI</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
+    <script src="sketch.js"></script>
+    <style>
         /* Stili specifici solo per la pagina Badge */
         /* Applica stili simili a .page-content per il contenitore principale del contenuto */
         .page-content {
@@ -58,15 +63,14 @@
     </style>
 </head>
 <body>
-    <div class="button-container">
-        <a href="index.html" class="nav-button">HOME</a>
-        <a href="about.html" class="nav-button">ABOUT</a>
-        <a href="future.html" class="nav-button">FUTURE</a>
-        <a href="podcast.html" class="nav-button">PODCAST</a>
-        <a href="badge.html" class="nav-button">BADGE</a>
-        <a href="contact.html" class="nav-button">CONTACT</a>
-    </div>
-
+    <div id="navbar-placeholder"></div>
+    <script>
+        fetch('nav.html') // Richiede il file nav.html che contiene il menu
+            .then(response => response.text()) // Converte la risposta in testo
+            .then(data => {
+                document.getElementById('navbar-placeholder').innerHTML = data; // Inserisce il contenuto del menu nel placeholder
+            });
+    </script>
     <div class="page-content">
         <h1>My Badges</h1>
         <img src="images/badge.JPG" alt="Badge Image 1">

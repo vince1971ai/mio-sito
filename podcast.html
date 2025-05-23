@@ -90,16 +90,14 @@
     </style>
 </head>
 <body>
-    <div class="button-container">
-        <a href="index.html" class="nav-button">HOME</a>
-        <a href="about.html" class="nav-button">ABOUT</a>
-        <a href="future.html" class="nav-button">FUTURE</a>
-        <a href="Space_invaders.html" class="nav-button">INVADERS</a>
-        <a href="podcast.html" class="nav-button">PODCAST</a>
-        <a href="badge.html" class="nav-button">BADGE</a>
-        <a href="contact.html" class="nav-button">CONTACT</a>
-    </div>
-
+    <div id="navbar-placeholder"></div>
+    <script>
+        fetch('nav.html') // Richiede il file nav.html che contiene il menu
+            .then(response => response.text()) // Converte la risposta in testo
+            .then(data => {
+                document.getElementById('navbar-placeholder').innerHTML = data; // Inserisce il contenuto del menu nel placeholder
+            });
+    </script>
     <div class="page-content">
         <h1>Nik Tesla AI Podcast</h1>
         <div class="podcast-container">
@@ -110,8 +108,31 @@
                 Il tuo browser non supporta l'elemento audio.
             </audio>
         </div>
-    </div>
 
+        <div class="podcast-container">
+            <h2>IA 2025/26: Il Futuro dell'Intelligenza Artificiale</h2>
+            <audio controls>
+                <source src="audio/IA_2025_26_il_Futuro_dell_Intelligenza_Artificiale.mp3" type="audio/mpeg">
+                Il tuo browser non supporta l'elemento audio.
+            </audio>
+        </div>
+
+        <div class="podcast-container">
+            <h2>Were We Born Vegans?</h2>
+            <audio controls>
+                <source src="audio/Were_We_Born_Vegans.mp3" type="audio/mpeg">
+                Il tuo browser non supporta l'elemento audio.
+            </audio>
+        </div>
+
+        <div class="podcast-container">
+            <h2>I Brevetti di Nikola Tesla</h2>
+            <audio controls>
+                <source src="audio/Brevetti-di-Nikola-Tesla.mp3" type="audio/mpeg">
+                Il tuo browser non supporta l'elemento audio.
+            </audio>
+        </div>
+    </div>
 
 </body>
 </html>

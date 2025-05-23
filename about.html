@@ -71,23 +71,24 @@
     </style>
 </head>
 <body>
-    <div class="button-container">
-        <a href="index.html" class="nav-button">HOME</a>
-        <a href="about.html" class="nav-button">ABOUT</a>
-        <a href="future.html" class="nav-button">FUTURE</a>
-        <a href="Space_invaders.html" class="nav-button">INVADERS</a> <a href="podcast.html" class="nav-button">PODCAST</a>
-        <a href="badge.html" class="nav-button">BADGE</a>
-        <a href="contact.html" class="nav-button">CONTACT</a>
-    </div>
-
+    <div id="navbar-placeholder"></div>
+    <script>
+        fetch('nav.html') // Richiede il file nav.html che contiene il menu
+            .then(response => response.text()) // Converte la risposta in testo
+            .then(data => {
+                document.getElementById('navbar-placeholder').innerHTML = data; // Inserisce il contenuto del menu nel placeholder
+            });
+    </script>
     <div class="page-content">
-        <h1>Who I Am</h1> <img src="images/Firefly un cappello, spaziale in versione umana 36084.jpg" alt="Image representing Nik Tesla AI"> <p>Welcome to my digital space! My name is Vincenzo and I am a passionate explorer of the tech world: through masterclasses and courses - from ‘Masterclasses Fundamentals of Python Language’ (Epicode) to ‘Introduction to ChatGPT’ (OpenAI Academy), from ‘Understanding Machine Learning’ (Google Italia) to ‘Generative AI’ (Google Cloud) - I am honing my skills in Python, Large Language Models, Responsible AI, Enhanced Productivity and much more, day after day.</p>
+        <h1>Who I Am</h1>
+        <img src="images/Firefly un cappello, spaziale in versione umana 36084.jpg" alt="Image representing Nik Tesla AI">
+        <p>Welcome to my digital space! My name is Vincenzo and I am a passionate explorer of the tech world: through masterclasses and courses - from ‘Masterclasses Fundamentals of Python Language’ (Epicode) to ‘Introduction to ChatGPT’ (OpenAI Academy), from ‘Understanding Machine Learning’ (Google Italia) to ‘Generative AI’ (Google Cloud) - I am honing my skills in Python, Large Language Models, Responsible AI, Enhanced Productivity and much more, day after day.</p>
 
         <p>Although I don't yet hold formal professional titles, each badge I obtain represents a piece of my continuous learning journey. This site is the laboratory where I test ideas and prototype advanced features, sharing with you demos, practical examples and insights on how artificial intelligence can revolutionise processes and creativity.</p>
 
         <p>Looking to the future, my commitment is to experiment with ever more innovative solutions and build a community of enthusiasts with whom we can grow together. Feel free to explore projects, leave feedback and follow the evolution of this journey into the world of AI: the best is yet to come!</p>
 
-        </div>
+    </div>
 
-    </body>
+</body>
 </html>
