@@ -1,0 +1,1491 @@
+
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromptMaestro - Assistente per il Prompt Engineering</title>
+  <meta name="description" content="Strumento avanzato per la creazione e ottimizzazione di prompt per l'intelligenza artificiale">
+  <style>
+    /* RESET E VARIABILI */
+    :root {
+      /* Colori tema chiaro */
+      --bg-primary: #f8f9fa;
+      --bg-secondary: #ffffff;
+      --text-primary: #212529;
+      --text-secondary: #495057;
+      --accent: #8a56ac;
+      --accent-light: #9a77b6;
+      --primary: #3a47d5;
+      --primary-light: #5864e0;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --neutral: #adb5bd;
+
+      /* Effetti e ombre */
+      --glass: rgba(255, 255, 255, 0.8);
+      --glass-border: rgba(255, 255, 255, 0.3);
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+      
+      /* Arrotondamenti */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 16px;
+      
+      /* Animazioni */
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.3s ease;
+      --transition-slow: 0.5s ease;
+    }
+
+    [data-theme="dark"] {
+      /* Colori tema scuro */
+      --bg-primary: #121212;
+      --bg-secondary: #1e1e1e;
+      --text-primary: #e9ecef;
+      --text-secondary: #adb5bd;
+      --glass: rgba(30, 30, 30, 0.8);
+      --glass-border: rgba(80, 80, 80, 0.3);
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    /* STILI BASE */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 16px;
+      line-height: 1.5;
+      transition: background-color var(--transition-normal);
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    /* LAYOUT PRINCIPALE */
+    .app-container {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid var(--glass-border);
+      padding: 2rem;
+      overflow-y: auto;
+      z-index: 10;
+    }
+
+    /* Area contenuto principale */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    /* Logo e intestazione */
+    .logo {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo svg {
+      width: 2rem;
+      height: 2rem;
+      margin-right: 0.75rem;
+      fill: var(--accent);
+    }
+
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* COMPONENTI UI */
+    .card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .card-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Badge qualità */
+    .quality-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-basic {
+      background-color: var(--neutral);
+      color: white;
+    }
+
+    .badge-good {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .badge-great {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    .badge-excellent {
+      background-color: var(--success);
+      color: white;
+    }
+
+    /* Barra di progresso */
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background-color: var(--neutral);
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width var(--transition-normal);
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    /* Pulsanti */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--transition-fast), transform var(--transition-fast);
+      font-size: 0.875rem;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn svg {
+      width: 1rem;
+      height: 1rem;
+      margin-right: 0.5rem;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-light);
+    }
+
+    .btn-accent {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    .btn-accent:hover {
+      background-color: var(--accent-light);
+    }
+
+    .btn-ghost {
+      background-color: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--neutral);
+    }
+
+    .btn-ghost:hover {
+      background-color: rgba(173, 181, 189, 0.1);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Input, textarea ed editor */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--neutral);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      transition: border-color var(--transition-fast);
+      font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(58, 71, 213, 0.1);
+    }
+
+    .editor-container {
+      position: relative;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--neutral);
+      transition: border-color var(--transition-fast);
+    }
+
+    .editor-container:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(58, 71, 213, 0.1);
+    }
+
+    .editor {
+      width: 100%;
+      min-height: 300px;
+      padding: 1rem;
+      border: none;
+      border-radius: var(--radius-md);
+      resize: vertical;
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .editor:focus {
+      outline: none;
+    }
+
+    /* Template di prompt */
+    .template-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .template-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background-color var(--transition-fast);
+    }
+
+    .template-item:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .template-item.active {
+      background-color: rgba(58, 71, 213, 0.1);
+      border-left: 3px solid var(--primary);
+    }
+
+    .template-icon {
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 0.75rem;
+      color: var(--accent);
+    }
+
+    .template-info {
+      flex: 1;
+    }
+
+    .template-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .template-description {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Analisi prompt */
+    .analysis-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .analysis-item {
+      background-color: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      text-align: center;
+      transition: transform var(--transition-fast);
+    }
+
+    .analysis-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .analysis-score {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .analysis-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+
+    .analysis-tip {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      padding: 0.5rem;
+      border-radius: var(--radius-sm);
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Sezione suggerimenti */
+    .suggestions {
+      margin-top: 1rem;
+    }
+
+    .suggestion-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.5rem;
+      background-color: rgba(58, 71, 213, 0.05);
+      border-left: 3px solid var(--primary);
+    }
+
+    .suggestion-icon {
+      color: var(--primary);
+      margin-right: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .suggestion-text {
+      font-size: 0.875rem;
+    }
+
+    /* CATEGORIE E FILTRI */
+    .categories {
+      margin-bottom: 1.5rem;
+    }
+
+    .category-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .category-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-sm);
+      background-color: rgba(0, 0, 0, 0.05);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .category-badge:hover,
+    .category-badge.active {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    /* Switch tema */
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .theme-switch-label {
+      font-size: 0.875rem;
+      margin-right: 0.75rem;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--neutral);
+      transition: var(--transition-normal);
+      border-radius: 12px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: var(--transition-normal);
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--accent);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    /* Icone tema */
+    .theme-icon {
+      font-size: 0.875rem;
+      margin: 0 0.25rem;
+    }
+
+    /* TOOLTIP */
+    .tooltip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .tooltip-icon {
+      cursor: help;
+      color: var(--neutral);
+      margin-left: 0.25rem;
+      transition: color var(--transition-fast);
+    }
+
+    .tooltip-icon:hover {
+      color: var(--text-primary);
+    }
+
+    .tooltip-content {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.75rem;
+      box-shadow: var(--shadow-md);
+      font-size: 0.75rem;
+      width: 200px;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity var(--transition-fast), visibility var(--transition-fast);
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .tooltip:hover .tooltip-content {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* SNACKBAR */
+    .snackbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      transition: transform var(--transition-normal), opacity var(--transition-normal);
+    }
+
+    .snackbar.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .snackbar-icon {
+      margin-right: 0.5rem;
+    }
+
+    .snackbar-message {
+      margin-right: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .snackbar-close {
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.25rem;
+    }
+
+    /* UTILS */
+    .hidden {
+      display: none !important;
+    }
+
+    .blur {
+      filter: blur(4px);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--neutral);
+    }
+
+    .info-text {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    /* ANIMAZIONI */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(138, 86, 172, 0.6);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(138, 86, 172, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(138, 86, 172, 0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    /* MEDIA QUERIES */
+    @media (max-width: 768px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: 100;
+      }
+
+      .sidebar.active {
+        display: block;
+      }
+
+      .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: var(--accent);
+        color: white;
+        box-shadow: var(--shadow-md);
+        z-index: 101;
+        cursor: pointer;
+      }
+
+      .analysis-section {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 1rem;
+      }
+
+      .analysis-section {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+          <path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1H3a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M5 11a5 5 0 0 0 5 5c.32 0 .63-.04.94-.1A5 5 0 0 0 19 11h-3a3 3 0 0 0-3 3 3 3 0 0 0-3-3H5z"></path>
+        </svg>
+        <h1>PromptMaestro</h1>
+      </div>
+
+      <!-- Tema -->
+      <div class="theme-switch">
+        <span class="theme-switch-label">Tema:</span>
+        <span class="theme-icon">☀️</span>
+        <label class="switch">
+          <input type="checkbox" id="theme-toggle">
+          <span class="slider"></span>
+        </label>
+        <span class="theme-icon">🌙</span>
+      </div>
+
+      <!-- Categorie -->
+      <div class="categories">
+        <h3 class="section-title">Categorie</h3>
+        <div class="category-filter" id="categories">
+          <span class="category-badge active" data-category="tutti">Tutti</span>
+          <span class="category-badge" data-category="generali">Generali</span>
+          <span class="category-badge" data-category="creativi">Creativi</span>
+          <span class="category-badge" data-category="tecnici">Tecnici</span>
+          <span class="category-badge" data-category="business">Business</span>
+        </div>
+      </div>
+
+      <!-- Template -->
+      <h3 class="section-title">Template</h3>
+      <div class="template-list" id="template-list">
+        <!-- I template verranno generati dinamicamente -->
+      </div>
+    </aside>
+
+    <!-- Contenuto principale -->
+    <main class="main-content">
+      <!-- Header -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Ottimizzatore di Prompt</h2>
+            <p class="card-subtitle">Crea prompt efficaci per l'AI con suggerimenti in tempo reale</p>
+          </div>
+          <div class="quality-container">
+            <span class="quality-badge badge-basic" id="quality-badge">Base</span>
+          </div>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-bar" id="quality-progress" style="width: 20%;"></div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btn-new">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
+            </svg>
+            Nuovo
+          </button>
+          <button class="btn btn-ghost" id="btn-copy">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"></path>
+            </svg>
+            Copia
+          </button>
+          <button class="btn btn-ghost" id="btn-download">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path>
+            </svg>
+            Esporta
+          </button>
+          <button class="btn btn-ghost" id="btn-share">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"></path>
+            </svg>
+            Condividi
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor -->
+      <div class="card">
+        <h3 class="card-title">
+          Editor di Prompt
+          <div class="tooltip">
+            <span class="tooltip-icon">?</span>
+            <div class="tooltip-content">
+              Scrivi o modifica il tuo prompt qui. L'analisi verrà eseguita automaticamente durante la digitazione.
+            </div>
+          </div>
+        </h3>
+
+        <div class="editor-container">
+          <textarea id="prompt-editor" class="editor" placeholder="Inserisci il tuo prompt qui o seleziona un template..."></textarea>
+        </div>
+      </div>
+
+      <!-- Analisi -->
+      <div class="card">
+        <h3 class="card-title">Analisi del Prompt</h3>
+        <p class="card-subtitle">Valutazione della qualità e suggerimenti per migliorare</p>
+
+        <div class="analysis-section" id="analysis-metrics">
+          <div class="analysis-item">
+            <div class="analysis-label">Chiarezza</div>
+            <div class="analysis-score" id="clarity-score">0</div>
+            <div class="analysis-tip" id="clarity-tip">Aggiungi dettagli specifici per migliorare la chiarezza.</div>
+          </div>
+
+          <div class="analysis-item">
+            <div class="analysis-label">Contesto</div>
+            <div class="analysis-score" id="context-score">0</div>
+            <div class="analysis-tip" id="context-tip">Fornisci più contesto sullo scopo del prompt.</div>
+          </div>
+
+          <div class="analysis-item">
+            <div class="analysis-label">Struttura</div>
+            <div class="analysis-score" id="structure-score">0</div>
+            <div class="analysis-tip" id="structure-tip">Organizza il prompt in sezioni per migliorare la struttura.</div>
+          </div>
+
+          <div class="analysis-item">
+            <div class="analysis-label">Specificità</div>
+            <div class="analysis-score" id="specificity-score">0</div>
+            <div class="analysis-tip" id="specificity-tip">Usa termini più specifici per ottenere risultati migliori.</div>
+          </div>
+        </div>
+
+        <h3 class="section-title">Suggerimenti</h3>
+        <div class="suggestions" id="suggestions-list">
+          <!-- I suggerimenti verranno generati dinamicamente -->
+          <p class="info-text">Inserisci un prompt per ricevere suggerimenti di miglioramento.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Pulsante menu mobile -->
+  <div class="menu-toggle hidden" id="menu-toggle">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+      <path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path>
+    </svg>
+  </div>
+
+  <!-- Snackbar -->
+  <div class="snackbar" id="snackbar">
+    <span class="snackbar-icon">✓</span>
+    <span class="snackbar-message" id="snackbar-message"></span>
+    <button class="snackbar-close" id="snackbar-close">×</button>
+  </div>
+
+  <!-- Onboarding overlay (mostrato solo al primo accesso) -->
+  <div class="onboarding hidden" id="onboarding">
+    <!-- Contenuto onboarding -->
+  </div>
+
+  <script>
+    // Utility functions
+    const debounce = (func, delay) => {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          func.apply(this, args);
+        }, delay);
+      };
+    };
+
+    const showSnackbar = (message) => {
+      const snackbar = document.getElementById('snackbar');
+      const snackbarMessage = document.getElementById('snackbar-message');
+      
+      snackbarMessage.textContent = message;
+      snackbar.classList.add('show');
+      
+      setTimeout(() => {
+        snackbar.classList.remove('show');
+      }, 3000);
+    };
+
+    // Theme management
+    const initTheme = () => {
+      const themeToggle = document.getElementById('theme-toggle');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const savedTheme = localStorage.getItem('theme');
+      
+      if (savedTheme === 'dark' || (savedTheme !== 'light' && prefersDark)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggle.checked = true;
+      }
+
+      themeToggle.addEventListener('change', () => {
+        if (themeToggle.checked) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+          localStorage.setItem('theme', 'light');
+        }
+      });
+    };
+
+    // Template data
+    const templates = [
+      {
+        id: 1,
+        title: "Struttura Base",
+        description: "Template base per qualsiasi prompt",
+        category: "generali",
+        template: `# Obiettivo
+[Descrivi brevemente cosa vuoi ottenere]
+
+# Contesto
+[Fornisci il contesto necessario]
+
+# Contenuto richiesto
+[Descrivi in dettaglio ciò che vuoi]
+
+# Formato desiderato
+[Specifica il formato della risposta]`
+      },
+      {
+        id: 2,
+        title: "Analisi Articolo",
+        description: "Per analizzare articoli o testi",
+        category: "generali",
+        template: `Sei un assistente editoriale esperto.
+        
+Ti chiedo di analizzare il seguente articolo:
+
+"[Inserisci il testo dell'articolo qui]"
+
+Per favore fornisci:
+1. Un breve riassunto (max 3 frasi)
+2. I punti chiave dell'articolo
+3. Tre suggerimenti per migliorare il testo
+4. Una valutazione generale della qualità dell'articolo`
+      },
+      {
+        id: 3,
+        title: "Brainstorming Creativo",
+        description: "Genera idee creative",
+        category: "creativi",
+        template: `Sei un consulente creativo esperto.
+
+Ho bisogno di idee per [descrivi progetto/obiettivo].
+
+Il pubblico target è [descrivi il target].
+
+Gli obiettivi principali sono:
+1. [obiettivo 1]
+2. [obiettivo 2]
+3. [obiettivo 3]
+
+Per favore, genera 5 idee creative diverse tra loro, spiegando per ciascuna:
+- Concetto principale
+- Perché potrebbe funzionare
+- Come implementarla
+- Possibili sfide`
+      },
+      {
+        id: 4,
+        title: "Istruzioni Tecniche",
+        description: "Per spiegazioni tecniche dettagliate",
+        category: "tecnici",
+        template: `Sei un esperto tecnico di [settore/tecnologia].
+
+Ho bisogno di istruzioni dettagliate su come [descrivi l'obiettivo tecnico].
+
+Il mio livello di competenza è [principiante/intermedio/avanzato].
+
+Vorrei che le istruzioni fossero:
+- Organizzate in passaggi sequenziali
+- Con spiegazioni per ogni passaggio
+- Includendo avvertenze su possibili errori
+- Con suggerimenti per la risoluzione di problemi comuni
+
+Per favore, usa un linguaggio [semplice/tecnico] e formatta il testo per facilitare la lettura.`
+      },
+      {
+        id: 5,
+        title: "Analisi SWOT",
+        description: "Per analisi di business",
+        category: "business",
+        template: `Sei un consulente strategico aziendale.
+
+Esegui un'analisi SWOT dettagliata per [nome dell'azienda/prodotto/servizio] nel settore [nome del settore].
+
+Informazioni rilevanti:
+- [inserisci informazioni sull'azienda]
+- [inserisci informazioni sul mercato]
+- [inserisci informazioni sui concorrenti]
+
+Per ogni elemento dell'analisi SWOT, fornisci:
+1. Una descrizione chiara
+2. L'impatto potenziale
+3. Suggerimenti strategici
+
+Struttura la tua risposta in modo professionale e concludi con un breve riepilogo delle implicazioni strategiche principali.`
+      }
+    ];
+
+    // Render templates
+    const renderTemplates = (category = 'tutti') => {
+      const templateList = document.getElementById('template-list');
+      templateList.innerHTML = '';
+      
+      const filteredTemplates = category === 'tutti' 
+        ? templates 
+        : templates.filter(t => t.category === category);
+
+      filteredTemplates.forEach(template => {
+        const templateItem = document.createElement('div');
+        templateItem.className = 'template-item';
+        templateItem.dataset.id = template.id;
+        
+        templateItem.innerHTML = `
+          <div class="template-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"></path>
+            </svg>
+          </div>
+          <div class="template-info">
+            <div class="template-title">${template.title}</div>
+            <div class="template-description">${template.description}</div>
+          </div>
+        `;
+
+        templateItem.addEventListener('click', () => {
+          document.getElementById('prompt-editor').value = template.template;
+          analyzePrompt();
+          
+          // For mobile
+          const sidebar = document.querySelector('.sidebar');
+          if (sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+          }
+        });
+
+        templateList.appendChild(templateItem);
+      });
+    };
+
+    // Category filtering
+    const initCategories = () => {
+      const categoryBadges = document.querySelectorAll('.category-badge');
+      
+      categoryBadges.forEach(badge => {
+        badge.addEventListener('click', () => {
+          // Remove active class from all badges
+          categoryBadges.forEach(b => b.classList.remove('active'));
+          
+          // Add active class to clicked badge
+          badge.classList.add('active');
+          
+          // Filter templates
+          renderTemplates(badge.dataset.category);
+        });
+      });
+    };
+
+    // Prompt analysis
+    const analyzePrompt = debounce(() => {
+      const promptText = document.getElementById('prompt-editor').value.trim();
+      
+      if (!promptText) {
+        resetAnalysis();
+        return;
+      }
+      
+      // Get scores
+      const scores = analyzePromptText(promptText);
+      
+      // Update score displays
+      document.getElementById('clarity-score').textContent = scores.clarity;
+      document.getElementById('context-score').textContent = scores.context;
+      document.getElementById('structure-score').textContent = scores.structure;
+      document.getElementById('specificity-score').textContent = scores.specificity;
+      
+      // Calculate overall score
+      const overallScore = Math.round((scores.clarity + scores.context + scores.structure + scores.specificity) / 4);
+      
+      // Update progress bar and badge
+      const progressBar = document.getElementById('quality-progress');
+      const qualityBadge = document.getElementById('quality-badge');
+      
+      progressBar.style.width = `${overallScore}%`;
+      
+      if (overallScore < 40) {
+        qualityBadge.textContent = 'Base';
+        qualityBadge.className = 'quality-badge badge-basic';
+      } else if (overallScore < 70) {
+        qualityBadge.textContent = 'Buono';
+        qualityBadge.className = 'quality-badge badge-good';
+      } else if (overallScore < 90) {
+        qualityBadge.textContent = 'Ottimo';
+        qualityBadge.className = 'quality-badge badge-great';
+      } else {
+        qualityBadge.textContent = 'Eccellente';
+        qualityBadge.className = 'quality-badge badge-excellent';
+      }
+      
+      // Generate suggestions
+      generateSuggestions(promptText, scores);
+    }, 500);
+
+    // Reset analysis
+    const resetAnalysis = () => {
+      const scores = { clarity: 0, context: 0, structure: 0, specificity: 0 };
+      
+      document.getElementById('clarity-score').textContent = '0';
+      document.getElementById('context-score').textContent = '0';
+      document.getElementById('structure-score').textContent = '0';
+      document.getElementById('specificity-score').textContent = '0';
+      
+      document.getElementById('quality-progress').style.width = '20%';
+      
+      const qualityBadge = document.getElementById('quality-badge');
+      qualityBadge.textContent = 'Base';
+      qualityBadge.className = 'quality-badge badge-basic';
+      
+      const suggestionsList = document.getElementById('suggestions-list');
+      suggestionsList.innerHTML = '<p class="info-text">Inserisci un prompt per ricevere suggerimenti di miglioramento.</p>';
+    };
+
+    // Analyze prompt text
+    const analyzePromptText = (text) => {
+      // Real metrics for analysis
+      const wordCount = text.split(/\s+/).filter(Boolean).length;
+      const sentenceCount = text.split(/[.!?]+/).filter(Boolean).length;
+      const avgSentenceLength = sentenceCount > 0 ? wordCount / sentenceCount : 0;
+      const paragraphCount = text.split(/\n\s*\n/).filter(Boolean).length;
+      const hasStructuralElements = /#{1,3}\s+\w+|:\s*\n|- .+|\d+\.\s+\w+/.test(text);
+      const hasContextualInfo = /contesto|background|scenario|situazione|obiettivo|goal|target|scopo|purpose/i.test(text);
+      const hasSpecificWords = /specifico|dettaglio|preciso|esatto|definito|chiaro|particolare|caratteristico/i.test(text);
+      const hasFormatGuidelines = /formato|struttura|stile|tono|voice|style|format/i.test(text);
+      
+      // Calculate scores
+      let clarity = Math.min(100, Math.max(0, 
+        30 + // Base score
+        (wordCount > 20 ? 20 : wordCount) + // Up to 20 points for word count
+        (avgSentenceLength > 5 && avgSentenceLength < 20 ? 20 : 0) + // 20 points for good sentence length
+        (hasSpecificWords ? 20 : 0) + // 20 points for specific words
+        (hasFormatGuidelines ? 10 : 0) // 10 points for format guidelines
+      ));
+      
+      let context = Math.min(100, Math.max(0,
+        20 + // Base score
+        (hasContextualInfo ? 40 : 0) + // 40 points for contextual info
+        (wordCount > 50 ? 30 : (wordCount > 25 ? 15 : 0)) + // Up to 30 points for word count
+        (paragraphCount > 1 ? 10 : 0) // 10 points for multiple paragraphs
+      ));
+      
+      let structure = Math.min(100, Math.max(0,
+        10 + // Base score
+        (hasStructuralElements ? 50 : 0) + // 50 points for structural elements
+        (paragraphCount > 1 ? 20 : 0) + // 20 points for multiple paragraphs
+        (text.includes('\n') ? 20 : 0) // 20 points for line breaks
+      ));
+      
+      let specificity = Math.min(100, Math.max(0,
+        20 + // Base score
+        (hasSpecificWords ? 30 : 0) + // 30 points for specific words
+        (wordCount > 100 ? 30 : (wordCount > 50 ? 15 : 0)) + // Up to 30 points for word count
+        (hasFormatGuidelines ? 20 : 0) // 20 points for format guidelines
+      ));
+      
+      return {
+        clarity: Math.round(clarity),
+        context: Math.round(context),
+        structure: Math.round(structure),
+        specificity: Math.round(specificity)
+      };
+    };
+
+    // Generate suggestions
+    const generateSuggestions = (text, scores) => {
+      const suggestionsList = document.getElementById('suggestions-list');
+      suggestionsList.innerHTML = '';
+      
+      let suggestions = [];
+      
+      // Clarity suggestions
+      if (scores.clarity < 60) {
+        if (text.split(/\s+/).filter(Boolean).length < 30) {
+          suggestions.push('Aggiungi più dettagli al tuo prompt per migliorare la chiarezza.');
+        }
+        if (!/\?|chiedo|potresti|puoi|vorrei/i.test(text)) {
+          suggestions.push('Specifica chiaramente cosa stai chiedendo all\'AI di fare.');
+        }
+      }
+      
+      // Context suggestions
+      if (scores.context < 60) {
+        if (!(/contesto|background|scenario/i.test(text))) {
+          suggestions.push('Aggiungi informazioni di contesto per aiutare l\'AI a comprendere meglio la situazione.');
+        }
+        if (!(/obiettivo|goal|scopo|purpose/i.test(text))) {
+          suggestions.push('Specifica l\'obiettivo finale che vuoi raggiungere con questo prompt.');
+        }
+      }
+      
+      // Structure suggestions
+      if (scores.structure < 60) {
+        if (!(/#{1,3}|:\s*\n|- .+|\d+\.\s+\w+/).test(text)) {
+          suggestions.push('Usa elenchi puntati, numerati o titoli per strutturare meglio il tuo prompt.');
+        }
+        if (text.split(/\n\s*\n/).filter(Boolean).length < 2) {
+          suggestions.push('Dividi il testo in paragrafi per migliorare la leggibilità.');
+        }
+      }
+      
+      // Specificity suggestions
+      if (scores.specificity < 60) {
+        if (!(/specifico|dettaglio|preciso|esatto/i.test(text))) {
+          suggestions.push('Usa termini più specifici per descrivere esattamente cosa ti serve.');
+        }
+        if (!(/formato|struttura|stile|tono/i.test(text))) {
+          suggestions.push('Specifica il formato o lo stile desiderato per la risposta.');
+        }
+      }
+      
+      // If no suggestions, add a generic positive message
+      if (suggestions.length === 0) {
+        const overallScore = Math.round((scores.clarity + scores.context + scores.structure + scores.specificity) / 4);
+        
+        if (overallScore > 80) {
+          suggestions.push('Ottimo prompt! Contiene tutti gli elementi per ottenere una risposta efficace.');
+        } else {
+          suggestions.push('Il prompt è buono, ma prova ad aggiungere più dettagli specifici per migliorare ulteriormente.');
+        }
+      }
+      
+      // Render suggestions
+      suggestions.forEach(suggestion => {
+        const suggestionItem = document.createElement('div');
+        suggestionItem.className = 'suggestion-item';
+        
+        suggestionItem.innerHTML = `
+          <div class="suggestion-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+            </svg>
+          </div>
+          <div class="suggestion-text">${suggestion}</div>
+        `;
+        
+        suggestionsList.appendChild(suggestionItem);
+      });
+      
+      // Update tips based on scores
+      if (scores.clarity < 50) {
+        document.getElementById('clarity-tip').textContent = 'Aggiungi dettagli specifici per migliorare la chiarezza.';
+      } else {
+        document.getElementById('clarity-tip').textContent = 'Buona chiarezza! Continua a usare termini specifici.';
+      }
+      
+      if (scores.context < 50) {
+        document.getElementById('context-tip').textContent = 'Fornisci più contesto sullo scopo del prompt.';
+      } else {
+        document.getElementById('context-tip').textContent = 'Buon contesto! Aiuta l\'AI a comprendere la situazione.';
+      }
+      
+      if (scores.structure < 50) {
+        document.getElementById('structure-tip').textContent = 'Organizza il prompt in sezioni per migliorare la struttura.';
+      } else {
+        document.getElementById('structure-tip').textContent = 'Buona struttura! Facilita la lettura e la comprensione.';
+      }
+      
+      if (scores.specificity < 50) {
+        document.getElementById('specificity-tip').textContent = 'Usa termini più specifici per ottenere risultati migliori.';
+      } else {
+        document.getElementById('specificity-tip').textContent = 'Buona specificità! I dettagli aiutano a ottenere risposte precise.';
+      }
+    };
+
+    // Button handlers
+    const initButtons = () => {
+      // New button
+      document.getElementById('btn-new').addEventListener('click', () => {
+        document.getElementById('prompt-editor').value = '';
+        resetAnalysis();
+      });
+      
+      // Copy button
+      document.getElementById('btn-copy').addEventListener('click', () => {
+        const promptText = document.getElementById('prompt-editor').value;
+        
+        if (!promptText) {
+          showSnackbar('Non c\'è testo da copiare');
+          return;
+        }
+        
+        navigator.clipboard.writeText(promptText)
+          .then(() => showSnackbar('Prompt copiato negli appunti'))
+          .catch(() => showSnackbar('Errore durante la copia'));
+      });
+      
+      // Download button
+      document.getElementById('btn-download').addEventListener('click', () => {
+        const promptText = document.getElementById('prompt-editor').value;
+        
+        if (!promptText) {
+          showSnackbar('Non c\'è testo da esportare');
+          return;
+        }
+        
+        const blob = new Blob([promptText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        a.href = url;
+        a.download = 'prompt.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showSnackbar('Prompt esportato come file di testo');
+      });
+      
+      // Share button
+      document.getElementById('btn-share').addEventListener('click', () => {
+        const promptText = document.getElementById('prompt-editor').value;
+        
+        if (!promptText) {
+          showSnackbar('Non c\'è testo da condividere');
+          return;
+        }
+        
+        // Encode prompt
+        const encodedPrompt = btoa(encodeURIComponent(promptText));
+        const shareUrl = `${window.location.origin}${window.location.pathname}?prompt=${encodedPrompt}`;
+        
+        // Try Web Share API first
+        if (navigator.share) {
+          navigator.share({
+            title: 'Condividi Prompt',
+            text: 'Dai un\'occhiata a questo prompt che ho creato:',
+            url: shareUrl
+          }).catch(() => {
+            // Fallback
+            copyToClipboard(shareUrl);
+          });
+        } else {
+          // Copy URL to clipboard
+          navigator.clipboard.writeText(shareUrl)
+            .then(() => showSnackbar('Link di condivisione copiato negli appunti'))
+            .catch(() => showSnackbar('Errore durante la copia del link'));
+        }
+      });
+      
+      // Snackbar close button
+      document.getElementById('snackbar-close').addEventListener('click', () => {
+        document.getElementById('snackbar').classList.remove('show');
+      });
+    };
+
+    // Mobile menu toggle
+    const initMobileMenu = () => {
+      const menuToggle = document.getElementById('menu-toggle');
+      const sidebar = document.querySelector('.sidebar');
+      
+      // Check if mobile view
+      const checkMobile = () => {
+        if (window.innerWidth <= 768) {
+          menuToggle.classList.remove('hidden');
+        } else {
+          menuToggle.classList.add('hidden');
+          sidebar.classList.remove('active');
+        }
+      };
+      
+      // Toggle menu
+      menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+      });
+      
+      // Check on resize
+      window.addEventListener('resize', checkMobile);
+      
+      // Initial check
+      checkMobile();
+    };
+
+    // Load shared prompt from URL
+    const loadSharedPrompt = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const encodedPrompt = urlParams.get('prompt');
+      
+      if (encodedPrompt) {
+        try {
+          const decodedPrompt = decodeURIComponent(atob(encodedPrompt));
+          document.getElementById('prompt-editor').value = decodedPrompt;
+          analyzePrompt();
+          showSnackbar('Prompt condiviso caricato');
+        } catch (error) {
+          console.error('Errore nel decodificare il prompt:', error);
+        }
+      }
+    };
+
+    // Persistence with localStorage
+    const initPersistence = () => {
+      // Load saved prompt if exists
+      const savedPrompt = localStorage.getItem('promptMaestro.lastPrompt');
+      if (savedPrompt && !document.getElementById('prompt-editor').value) {
+        document.getElementById('prompt-editor').value = savedPrompt;
+        analyzePrompt();
+      }
+      
+      // Save prompt on change
+      document.getElementById('prompt-editor').addEventListener('input', () => {
+        const promptText = document.getElementById('prompt-editor').value;
+        localStorage.setItem('promptMaestro.lastPrompt', promptText);
+        analyzePrompt();
+      });
+    };
+
+    // Show onboarding on first visit
+    const checkFirstVisit = () => {
+      if (!localStorage.getItem('promptMaestro.visited')) {
+        // Set visited flag
+        localStorage.setItem('promptMaestro.visited', 'true');
+        
+        // Here you would show onboarding
+        // For now just show a welcome message
+        showSnackbar('Benvenuto in PromptMaestro!');
+      }
+    };
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      renderTemplates();
+      initCategories();
+      initButtons();
+      initMobileMenu();
+      initPersistence();
+      loadSharedPrompt();
+      checkFirstVisit();
+      
+      // Set up editor
+      const editor = document.getElementById('prompt-editor');
+      editor.addEventListener('input', analyzePrompt);
+      
+      // Initial analysis if content is present
+      if (editor.value) {
+        analyzePrompt();
+      }
+    });
+  </script>
+</body>
+</html>
