@@ -41,18 +41,18 @@
         .contact-form input[type="text"],
         .contact-form input[type="email"],
         .contact-form textarea {
-            width: calc(100% - 20px); /* Larghezza completa meno il padding */
+            width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 20px;
             border: 1px solid rgba(200, 200, 255, 0.3);
             border-radius: 4px;
             background-color: rgba(0, 0, 0, 0.3);
             color: #fff;
-            box-sizing: border-box; /* Assicura che padding e border siano inclusi nella larghezza */
+            box-sizing: border-box;
         }
 
         .contact-form textarea {
-            resize: vertical; /* Permette il ridimensionamento verticale */
+            resize: vertical;
             min-height: 100px;
         }
 
@@ -65,8 +65,8 @@
             cursor: pointer;
             font-size: 1.1em;
             transition: background-color 0.3s ease;
-            display: block; /* Per centrare il pulsante se si desidera */
-            margin: 0 auto; /* Centra il pulsante */
+            display: block;
+            margin: 0 auto;
         }
 
         .contact-form button:hover {
@@ -113,7 +113,7 @@
             .contact-form input[type="text"],
             .contact-form input[type="email"],
             .contact-form textarea {
-                width: 100%; /* Rimuovi il calc() per schermi piccoli */
+                width: 100%;
             }
         }
 
@@ -123,9 +123,9 @@
     <div id="navbar-placeholder"></div>
     <script>
         fetch('nav.html') // Richiede il file nav.html che contiene il menu
-            .then(response => response.text()) // Converte la risposta in testo
+            .then(response => response.text())
             .then(data => {
-                document.getElementById('navbar-placeholder').innerHTML = data; // Inserisce il contenuto del menu nel placeholder
+                document.getElementById('navbar-placeholder').innerHTML = data;
             });
     </script>
     <div class="page-content">
@@ -149,7 +149,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('load', () => { // Cambiato da DOMContentLoaded a load
             const contactForm = document.getElementById('contactForm');
             const formStatusMessage = document.getElementById('formStatusMessage');
             const submitButton = contactForm.querySelector('button[type="submit"]');
@@ -160,11 +160,14 @@
             const SUPABASE_URL = 'https://ppmymwdjdvcsrfawpeqi.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbXltd2RqZHZjc3JmYXdwZXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NzUxOTMsImV4cCI6MjA2MzA1MTE5M30.MTjtLfYQv-ztDg1t4YZQmqwrPKzfTKyY0CPWKTEEKrc';
             const SUPABASE_TABLE_NAME = 'contact_messages';
+
+            // Inizializza il client Supabase
+            // Questo ora è garantito che venga eseguito DOPO che la libreria Supabase è caricata
             const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
             if (!contactForm || !formStatusMessage || !submitButton) {
-                console.error("Elementi HTML per il form di contatto non trovati. La funzionalità non sarà attiva.");
+                console.error("Elementi HTML per il form di contatto non trovati. La funzionalità di invio non sarà attiva.");
                 return;
             }
 
