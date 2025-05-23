@@ -65,18 +65,58 @@
       cursor: not-allowed;
     }
 
+    /* Modifiche per la cronologia della chat */
     #aiResponse {
       margin-top: 25px;
       padding: 15px;
-      min-height: 50px;
-      border: 1px dashed rgba(255, 255, 255, 0.3);
+      max-height: 400px; /* Altezza massima per la cronologia */
+      overflow-y: auto; /* Aggiungi barra di scorrimento verticale */
+      border: 1px dashed rgba(255, 255, 255, 0.3); /* Mantieni il bordo */
       border-radius: 4px;
       background-color: rgba(50, 50, 60, 0.6);
-      color: lightgreen; /* Colore di default per la risposta */
+      /* rimosso color e text-align qui perché gestiti dalle classi dei messaggi */
       font-size: 1.1em;
-      text-align: left;
+      text-align: left; /* Default per il contenitore, i messaggi specifici lo sovrascrivono */
       word-wrap: break-word;
     }
+
+    .chat-message {
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        word-wrap: break-word;
+        box-sizing: border-box; /* Assicura che padding non espanda l'elemento oltre il 100% */
+    }
+    .chat-message .chat-sender {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+    .chat-message .chat-text {
+        display: inline; /* Per allineare testo con mittente */
+    }
+    .user-message {
+        background-color: rgba(0, 123, 255, 0.2); /* Blu chiaro */
+        color: #fff;
+        text-align: right;
+        margin-left: 20%; /* Sposta a destra */
+    }
+    .ai-message {
+        background-color: rgba(40, 167, 69, 0.2); /* Verde chiaro */
+        color: #fff;
+        text-align: left;
+        margin-right: 20%; /* Sposta a sinistra */
+    }
+    .info-message {
+        background-color: rgba(255, 193, 7, 0.2); /* Giallo chiaro */
+        color: orange;
+        text-align: center;
+    }
+    .error-message {
+        background-color: rgba(220, 53, 69, 0.2); /* Rosso chiaro */
+        color: red;
+        text-align: center;
+    }
+
 
     /* Aggiustamenti Responsivi Minori */
     @media (max-width: 600px) {
@@ -91,6 +131,11 @@
       .ai-chat-container button,
       #aiResponse {
         font-size: 0.95em;
+      }
+      .user-message, .ai-message {
+          margin-left: 0; /* Rimuovi margini su schermi piccoli */
+          margin-right: 0;
+          text-align: left; /* Allinea tutto a sinistra per uniformità su mobile */
       }
     }
   </style>
@@ -116,30 +161,54 @@
     document.addEventListener('DOMContentLoaded', () => {
         const userQuestionTextarea = document.getElementById('userQuestion');
         const sendQuestionButton = document.getElementById('sendQuestion');
-        const aiResponseDiv = document.getElementById('aiResponse');
+        const aiResponseDiv = document.getElementById('aiResponse'); // Questo div conterrà la cronologia della chat
 
-        // L'URL della tua funzione API su Vercel
         const API_ENDPOINT_PATH = '/api/ask-ai';
         const AI_API_URL = window.location.origin + API_ENDPOINT_PATH;
 
         console.log("AI API URL being called:", AI_API_URL);
 
         if (!userQuestionTextarea || !sendQuestionButton || !aiResponseDiv) {
-            console.error("HTML elements for AI chat not found. AI functionality will not be active.");
+            console.error("Elementi HTML per la chat AI non trovati. La funzionalità non sarà attiva.");
             return;
+        }
+
+        // Funzione per aggiungere un messaggio alla cronologia della chat
+        function addMessageToChat(sender, message, type) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = 'chat-message ' + type;
+
+            const senderSpan = document.createElement('span');
+            senderSpan.className = 'chat-sender';
+            senderSpan.textContent = sender + ': ';
+
+            const messageText = document.createElement('span');
+            messageText.className = 'chat-text';
+            messageText.textContent = message;
+
+            messageWrapper.appendChild(senderSpan);
+            messageWrapper.appendChild(messageText);
+            aiResponseDiv.appendChild(messageWrapper); // Aggiungi il nuovo messaggio al contenitore
+            aiResponseDiv.scrollTop = aiResponseDiv.scrollHeight; // Scorri verso il basso per visualizzare l'ultimo messaggio
         }
 
         sendQuestionButton.addEventListener('click', async () => {
             const question = userQuestionTextarea.value.trim();
 
             if (!question) {
-                aiResponseDiv.textContent = 'Please enter a question.';
-                aiResponseDiv.style.color = 'orange';
+                addMessageToChat('System', 'Please enter a question.', 'info-message');
                 return;
             }
 
-            aiResponseDiv.textContent = 'Thinking...';
-            aiResponseDiv.style.color = 'white';
+            addMessageToChat('You', question, 'user-message'); // Aggiungi la domanda dell'utente
+            userQuestionTextarea.value = ''; // Pulisci l'input
+
+            const thinkingMessage = document.createElement('div');
+            thinkingMessage.className = 'chat-message info-message';
+            thinkingMessage.innerHTML = '<span class="chat-sender">AI:</span> Thinking...';
+            aiResponseDiv.appendChild(thinkingMessage); // Aggiungi il messaggio "Thinking..."
+            aiResponseDiv.scrollTop = aiResponseDiv.scrollHeight; // Scorri per vederlo
+
             sendQuestionButton.disabled = true;
 
             try {
@@ -151,6 +220,11 @@
                     body: JSON.stringify({ question: question })
                 });
 
+                // Rimuovi il messaggio "Thinking..."
+                if (aiResponseDiv.contains(thinkingMessage)) {
+                    aiResponseDiv.removeChild(thinkingMessage);
+                }
+
                 if (!response.ok) {
                     const errorBody = await response.text();
                     throw new Error(`Backend HTTP error: ${response.status} ${response.statusText} - Response: ${errorBody}`);
@@ -159,18 +233,19 @@
                 const data = await response.json();
 
                 if (data && data.answer) {
-                    aiResponseDiv.textContent = data.answer;
-                    aiResponseDiv.style.color = 'lightgreen';
+                    addMessageToChat('AI', data.answer, 'ai-message'); // Aggiungi la risposta dell'AI
                 } else {
-                     aiResponseDiv.textContent = 'Received an invalid response from the AI.';
-                     aiResponseDiv.style.color = 'orange';
-                     console.error('Unexpected backend response or incorrect format:', data);
+                    addMessageToChat('AI', 'Received an invalid response from the AI.', 'error-message');
+                    console.error('Unexpected backend response or incorrect format:', data);
                 }
 
             } catch (error) {
                 console.error('Error communicating with AI service:', error);
-                aiResponseDiv.textContent = `Error: ${error.message || 'Could not get a response from the AI.'}`;
-                aiResponseDiv.style.color = 'red';
+                // Rimuovi il messaggio "Thinking..." anche in caso di errore
+                if (aiResponseDiv.contains(thinkingMessage)) {
+                    aiResponseDiv.removeChild(thinkingMessage);
+                }
+                addMessageToChat('Error', `Could not get a response: ${error.message}`, 'error-message');
             } finally {
                 sendQuestionButton.disabled = false;
             }
