@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ask AI - Nik Tesla AI</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
+  <script src="sketch.js"></script>
+  <style>
+    /* Stili specifici per la pagina Ask AI */
+    .ai-chat-container {
+      z-index: 10;
+      position: relative;
+      max-width: 700px; /* Larghezza massima del contenitore della chat */
+      width: 90%;
+      margin: 80px auto 20px auto; /* Centra orizzontalmente, spazio dall'alto */
+      background-color: rgba(20, 20, 30, 0.8);
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+      color: #fff;
+      text-align: center; /* Per centrare gli elementi del form se si desidera */
+    }
+
+    .ai-chat-container label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 1.2em;
+      color: rgba(200, 200, 255, 1);
+    }
+
+    .ai-chat-container textarea {
+      width: calc(100% - 20px); /* Larghezza con padding */
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      background-color: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-size: 1em;
+      resize: vertical;
+      min-height: 80px;
+      box-sizing: border-box;
+    }
+
+    .ai-chat-container button {
+      background-color: rgba(150, 100, 255, 0.8); /* Colore viola come il bottone sentiment */
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.1em;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .ai-chat-container button:hover {
+      background-color: rgba(150, 100, 255, 1);
+    }
+
+    .ai-chat-container button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    #aiResponse {
+      margin-top: 25px;
+      padding: 15px;
+      min-height: 50px;
+      border: 1px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      background-color: rgba(50, 50, 60, 0.6);
+      color: lightgreen; /* Colore di default per la risposta */
+      font-size: 1.1em;
+      text-align: left;
+      word-wrap: break-word;
+    }
+
+    /* Aggiustamenti Responsivi Minori */
+    @media (max-width: 600px) {
+      .ai-chat-container {
+        margin-top: 60px;
+        padding: 15px;
+      }
+      .ai-chat-container textarea {
+        width: 100%;
+      }
+      .ai-chat-container label,
+      .ai-chat-container button,
+      #aiResponse {
+        font-size: 0.95em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="button-container">
+      <a href="index.html" class="nav-button">HOME</a>
+      <a href="about.html" class="nav-button">ABOUT</a>
+      <a href="future.html" class="nav-button">FUTURE</a>
+      <a href="Space_invaders.html" class="nav-button">INVADERS</a>
+      <a href="podcast.html" class="nav-button">PODCAST</a>
+      <a href="badge.html" class="nav-button">BADGE</a>
+      <a href="prompt_optimiser.html" class="nav-button">PROMPT OPTIMIZER</a>
+      <a href="ask_ai.html" class="nav-button">ASK AI</a>
+      <a href="contact.html" class="nav-button">CONTACT</a>
+  </div>
+
+  <div class="ai-chat-container">
+    <h1>Ask Anything to Nik Tesla AI</h1>
+    <label for="userQuestion">Your Question:</label>
+    <textarea id="userQuestion" rows="3" placeholder="Write your question here..."></textarea>
+    <button id="sendQuestion">Send to AI</button>
+    <div id="aiResponse"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const userQuestionTextarea = document.getElementById('userQuestion');
+        const sendQuestionButton = document.getElementById('sendQuestion');
+        const aiResponseDiv = document.getElementById('aiResponse');
+
+        // L'URL della tua funzione API su Vercel
+        const API_ENDPOINT_PATH = '/api/ask-ai';
+        const AI_API_URL = window.location.origin + API_ENDPOINT_PATH;
+
+        console.log("AI API URL being called:", AI_API_URL);
+
+        if (!userQuestionTextarea || !sendQuestionButton || !aiResponseDiv) {
+            console.error("HTML elements for AI chat not found. AI functionality will not be active.");
+            return;
+        }
+
+        sendQuestionButton.addEventListener('click', async () => {
+            const question = userQuestionTextarea.value.trim();
+
+            if (!question) {
+                aiResponseDiv.textContent = 'Please enter a question.';
+                aiResponseDiv.style.color = 'orange';
+                return;
+            }
+
+            aiResponseDiv.textContent = 'Thinking...';
+            aiResponseDiv.style.color = 'white';
+            sendQuestionButton.disabled = true;
+
+            try {
+                const response = await fetch(AI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    throw new Error(`Backend HTTP error: ${response.status} ${response.statusText} - Response: ${errorBody}`);
+                }
+
+                const data = await response.json();
+
+                if (data && data.answer) {
+                    aiResponseDiv.textContent = data.answer;
+                    aiResponseDiv.style.color = 'lightgreen';
+                } else {
+                     aiResponseDiv.textContent = 'Received an invalid response from the AI.';
+                     aiResponseDiv.style.color = 'orange';
+                     console.error('Unexpected backend response or incorrect format:', data);
+                }
+
+            } catch (error) {
+                console.error('Error communicating with AI service:', error);
+                aiResponseDiv.textContent = `Error: ${error.message || 'Could not get a response from the AI.'}`;
+                aiResponseDiv.style.color = 'red';
+            } finally {
+                sendQuestionButton.disabled = false;
+            }
+        });
+    });
+  </script>
+
+</body>
+</html>
