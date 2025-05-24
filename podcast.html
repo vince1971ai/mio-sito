@@ -103,8 +103,7 @@
         <div class="podcast-container">
             <h2>Benchmark Italian Proverbs for LLM</h2>
             <audio controls>
-                <source src="audio/benchmark-proverbs.mp3" type="audio/mpeg"> {/* PERCORSO E TIPO CORRETTI PER FILE .mp3 */}
-                {/* Messaggio di fallback per browser che non supportano il tag audio */}
+                <source src="audio/benchmark-proverbs.mp3" type="audio/mpeg">
                 Il tuo browser non supporta l'elemento audio.
             </audio>
         </div>
@@ -133,6 +132,28 @@
             </audio>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Seleziona tutti gli elementi audio sulla pagina
+            const allAudios = document.querySelectorAll('audio');
+
+            // Aggiungi un event listener per l'evento 'play' ad ogni elemento audio
+            allAudios.forEach(audioElement => {
+                audioElement.addEventListener('play', function() {
+                    // Quando questo elemento audio inizia a suonare,
+                    // itera su tutti gli altri elementi audio
+                    allAudios.forEach(otherAudioElement => {
+                        // Se l'altro elemento audio non è quello che ha appena iniziato a suonare
+                        // e sta attualmente suonando, mettilo in pausa.
+                        if (otherAudioElement !== audioElement && !otherAudioElement.paused) {
+                            otherAudioElement.pause();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>
