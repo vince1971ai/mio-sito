@@ -1,255 +1,112 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact - Nik Tesla AI</title>
-    <link rel="stylesheet" href="style.css">
+    <title>About - Nik Tesla AI</title> <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.js"></script>
     <script src="sketch.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <style>
-        /* Stili specifici per la pagina Contact */
+        /* Stili specifici solo per la pagina About */
+        /* Esempio per stilare il contenitore del contenuto (simili ad about.html per coerenza) */
         .page-content {
-            z-index: 10;
-            position: relative;
-            max-width: 600px;
-            width: 90%;
-            margin: 80px auto 20px auto;
+            z-index: 10; /* Assicura che il contenuto sia sopra il canvas */
+            position: relative; /* Permette a z-index di funzionare bene */
+
+            /* Responsività e dimensioni */
+            max-width: 800px; /* Larghezza massima del contenuto */
+            width: 90%; /* Larghezza responsive */
+            margin: 80px auto 20px auto; /* Centra orizzontalmente, aggiunge spazio dall'alto */
+
+            /* Aspetto visivo */
             background-color: rgba(20, 20, 30, 0.8);
             padding: 25px;
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
             color: #fff;
-            text-align: left; /* Per allineare il testo del form */
+            text-align: center; /* Centra il testo e gli elementi inline/inline-block come l'immagine */
         }
 
         .page-content h1 {
             text-align: center;
             margin-top: 0;
-            color: rgba(200, 200, 255, 1);
-            margin-bottom: 30px;
+            color: rgba(200, 200, 255, 1); /* Colore titolo */
         }
 
-        .contact-form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .contact-form input[type="text"],
-        .contact-form input[type="email"],
-        .contact-form textarea {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(200, 200, 255, 0.3);
-            border-radius: 4px;
-            background-color: rgba(0, 0, 0, 0.3);
-            color: #fff;
-            box-sizing: border-box;
-        }
-
-        .contact-form textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .contact-form button {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+         .page-content p {
             font-size: 1.1em;
-            transition: background-color 0.3s ease;
-            display: block;
-            margin: 0 auto;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px; /* Spazio sotto i paragrafi */
+            text-align: left; /* Ri-allinea il testo dei paragrafi a sinistra */
         }
 
-        .contact-form button:hover {
-            background-color: #0056b3;
+        /* Stili per l'immagine nella pagina About */
+        .page-content img {
+            display: block; /* Rende l'immagine un blocco per poter usare margin: auto */
+            margin: 20px auto; /* Centra l'immagine orizzontalmente e aggiunge spazio sopra e sotto */
+            max-width: 100%; /* Assicura che l'immagine non superi la larghezza del contenitore */
+            height: auto; /* Mantiene le proporzioni */
+            border-radius: 8px; /* Bordi arrotondati per l'immagine */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Ombra leggera */
+            /* Puoi impostare una larghezza massima specifica se 100% è troppo grande */
+            max-width: 300px; /* Esempio: limita la larghezza massima a 300px */
         }
 
-        .contact-form button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
+        /* Stili specifici per il contenitore LMNT RIMOSSI */
+        /*
+        .speech-container { ... }
+        .speech-container p { ... }
+        .speech-container button { ... }
+        .speech-container audio { ... }
+        .speech-container #error-message { ... }
+        */
 
-        .status-message {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
-        }
 
-        .status-success {
-            background-color: #d4edda;
-            color: #155724;
-            border-color: #c3e6cb;
-        }
-
-        .status-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-color: #f5c6cb;
-        }
-
-        .status-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border-color: #ffeeba;
-        }
-
-        /* Media Query per la responsività */
+         /* Aggiustamenti Responsivi Minori */
         @media (max-width: 600px) {
             .page-content {
-                margin-top: 60px;
+                margin-top: 60px; /* Riduci spazio dall'alto su schermi piccoli */
                 padding: 15px;
             }
-            .contact-form input[type="text"],
-            .contact-form input[type="email"],
-            .contact-form textarea {
-                width: 100%;
+             .page-content p {
+                font-size: 1em; /* Riduci font size */
             }
+             .page-content img {
+                 max-width: 80%; /* Riduci la larghezza massima dell'immagine su schermi piccoli se necessario */
+             }
+            /* Aggiustamenti LMNT RIMOSSI */
+            /*
+            .speech-container { ... }
+            .speech-container button { ... }
+            .speech-container audio { ... }
+            */
         }
 
     </style>
 </head>
 <body>
-    <div id="navbar-placeholder"></div>
-    <script>
-        fetch('nav.html') // Richiede il file nav.html che contiene il menu
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('navbar-placeholder').innerHTML = data;
-            });
-    </script>
-    <div class="page-content">
-        <h1>Contact Me</h1>
-        <form id="contactForm" class="contact-form">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
-
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-
-            <label for="subject">Subject:</label>
-            <input type="text" id="subject" name="subject">
-
-            <label for="message">Message:</label>
-            <textarea id="message" name="message" rows="6" required></textarea>
-
-            <button type="submit">Send Message</button>
-            <div id="formStatusMessage" class="status-message"></div>
-        </form>
+    <div class="button-container">
+        <a href="index.html" class="nav-button">HOME</a>
+        <a href="about.html" class="nav-button">ABOUT</a>
+        <a href="future.html" class="nav-button">FUTURE</a>
+        <a href="Space_invaders.html" class="nav-button">INVADERS</a>
+        <a href="podcast.html" class="nav-button">PODCAST</a>
+        <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="contact.html" class="nav-button">CONTACT</a>
     </div>
 
-    <script>
-        // Cambiato da window.addEventListener('load') a DOMContentLoaded
-        // e rimosso il listener 'load' per affidarsi a 'defer' e DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', () => {
-            const contactForm = document.getElementById('contactForm');
-            const formStatusMessage = document.getElementById('formStatusMessage');
-            const submitButton = contactForm.querySelector('button[type="submit"]');
+    <div class="page-content">
+        <h1>Who I Am</h1>
 
-            // URL della tua funzione serverless per inviare email
-            const SEND_EMAIL_API_URL = window.location.origin + '/api/send-email';
-            // Le tue configurazioni Supabase (lasciale così come sono)
-            const SUPABASE_URL = 'https://ppmymwdjdvcsrfawpeqi.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbXltd2RqZHZjc3JmYXdwZXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NzUxOTMsImV4cCI6MjA2MzA1MTE5M30.MTjtLfYQv-ztDg1t4YZQmqwrPKzfTKyY0CPWKTEEKrc';
-            const SUPABASE_TABLE_NAME = 'contact_messages';
+        <img src="images/about.jpg" alt="Image representing Nik Tesla AI">
 
-            // Inizializza il client Supabase
-            // Con 'defer' sullo script CDN di Supabase, DOMContentLoaded è il momento giusto
-            const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        <p>Welcome to my digital space! My name is Vincenzo and I am a passionate explorer of the tech world: through masterclasses and courses - from ‘Masterclasses Fundamentals of Python Language’ (Epicode) to ‘Introduction to ChatGPT’ (OpenAI Academy), from ‘Understanding Machine Learning’ (Google Italia) to ‘Generative AI’ (Google Cloud) - I am honing my skills in Python, Large Language Models, Responsible AI, Enhanced Productivity and much more, day after day.</p>
 
+        <p>Although I don't yet hold formal professional titles, each badge I obtain represents a piece of my continuous learning journey. This site is the laboratory where I test ideas and prototype advanced features, sharing with you demos, practical examples and insights on how artificial intelligence can revolutionise processes and creativity.</p>
 
-            if (!contactForm || !formStatusMessage || !submitButton) {
-                console.error("Elementi HTML per il form di contatto non trovati. La funzionalità di invio non sarà attiva.");
-                return;
-            }
+        <p>Looking to the future, my commitment is to experiment with ever more innovative solutions and build a community of enthusiasts with whom we can grow together. Feel free to explore projects, leave feedback and follow the evolution of this journey into the world of AI: the best is yet to come!</p>
 
-            contactForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Impedisce il ricaricamento della pagina
+        </div>
 
-                formStatusMessage.textContent = '';
-                formStatusMessage.className = '';
-                submitButton.textContent = 'Sending...';
-                submitButton.disabled = true;
-
-                const formData = new FormData(contactForm);
-                const formDataObject = {};
-                formData.forEach((value, key) => {
-                     formDataObject[key] = value;
-                });
-
-                let emailSent = false;
-                let supabaseSaved = false;
-                let errorMessage = '';
-
-                try {
-                    // 1. Invia email tramite la funzione serverless SendGrid
-                    const emailResponse = await fetch(SEND_EMAIL_API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formDataObject)
-                    });
-
-                    if (!emailResponse.ok) {
-                        const errorBody = await emailResponse.text();
-                        throw new Error(`Email sending failed: ${emailResponse.status} ${emailResponse.statusText} - ${errorBody}`);
-                    }
-                    emailSent = true;
-                    console.log('Email sent successfully via API.');
-
-                } catch (error) {
-                    emailSent = false;
-                    errorMessage += `Email error: ${error.message}. `;
-                    console.error('Error sending email:', error);
-                }
-
-                try {
-                    // 2. Salva su Supabase (logica esistente)
-                    const { data, error } = await supabase
-                        .from(SUPABASE_TABLE_NAME)
-                        .insert([formDataObject]);
-
-                    if (error) {
-                        throw new Error(`Supabase save failed: ${error.message}`);
-                    }
-                    supabaseSaved = true;
-                    console.log('Message saved to Supabase successfully:', data);
-
-                } catch (error) {
-                    supabaseSaved = false;
-                    errorMessage += `Supabase error: ${error.message}.`;
-                    console.error('Error saving to Supabase:', error);
-                }
-
-                if (emailSent && supabaseSaved) {
-                    formStatusMessage.textContent = 'Message sent and saved successfully!';
-                    formStatusMessage.className = 'status-message status-success';
-                    contactForm.reset(); // Solo se tutto va a buon fine
-                } else if (emailSent && !supabaseSaved) {
-                    formStatusMessage.textContent = `Email sent, but failed to save message. ${errorMessage}`;
-                    formStatusMessage.className = 'status-message status-warning';
-                    // Non resetta il form qui, potrebbe esserci bisogno di ritentare il salvataggio o copiare i dati
-                } else if (!emailSent && supabaseSaved) {
-                    formStatusMessage.textContent = `Message saved, but failed to send email. ${errorMessage}`;
-                    formStatusMessage.className = 'status-message status-warning';
-                } else {
-                    formStatusMessage.textContent = `Failed to send message: ${errorMessage}`;
-                    formStatusMessage.className = 'status-message status-error';
-                }
-
-                submitButton.textContent = 'Send Message';
-                submitButton.disabled = false;
-            });
-        });
-    </script>
-</body>
+    </body>
 </html>
