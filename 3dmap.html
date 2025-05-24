@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mappa Emozionale Vettoriale 3D</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden; /* Nasconde le barre di scorrimento */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f4f8; /* Sfondo chiaro */
+        }
+        h1 {
+            /* Stile per il titolo: più grande, font custom, sfondo grigio */
+            font-family: 'Montserrat', sans-serif; /* Font più bello */
+            font-size: 7rem; /* Dimensione del font ulteriormente ingrandita */
+            @apply font-extrabold text-gray-800 mb-6 mt-4; /* Grassetto e margini */
+            background-color: #e2e8f0; /* Sfondo grigio chiaro */
+            padding: 0.75rem 1.5rem; /* Padding intorno al testo */
+            border-radius: 0.75rem; /* Bordi arrotondati */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Ombra leggera */
+            text-align: center; /* Centra il testo */
+        }
+        #scene-container {
+            width: 100vw;
+            height: calc(100vh - 200px); /* Lascia spazio per il titolo e i controlli, aumentato leggermente */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-color: #d0d8e0; /* Sfondo leggermente più scuro per il container, non più bianco */
+            border-radius: 1rem; /* Bordi arrotondati */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombra leggera */
+            margin-bottom: 20px;
+        }
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 1rem; /* Bordi arrotondati */
+        }
+        #controls {
+            display: flex;
+            flex-wrap: wrap; /* Permette ai controlli di andare a capo */
+            gap: 1rem;
+            padding: 1rem;
+            background-color: #333333; /* Sfondo scuro per la barra dei controlli */
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-top: 10px; /* Spazio dai bordi del container */
+            justify-content: center; /* Centra i controlli */
+        }
+        .control-button {
+            /* Colori scuri per i pulsanti */
+            @apply px-4 py-2 bg-gray-900 text-white font-semibold rounded-md shadow-md hover:bg-gray-800 transition duration-300 ease-in-out;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            color: white; /* Testo dei pulsanti bianco */
+        }
+        .control-button:active {
+            @apply bg-black; /* Ancora più scuro al click */
+        }
+
+        /* Stili per il pannello delle informazioni sull'emozione */
+        #emotion-info-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 300px;
+            max-height: calc(100% - 2rem);
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 100;
+            transform: translateX(120%); /* Inizialmente fuori schermo */
+            transition: transform 0.3s ease-out;
+            overflow-y: auto; /* Permette lo scroll se il contenuto è troppo lungo */
+            pointer-events: none; /* Permette di cliccare attraverso il pannello se non si interagisce con i pulsanti */
+        }
+        #emotion-info-panel.open {
+            transform: translateX(0); /* Entra in schermo */
+            /* Non impostare pointer-events: auto qui, ma sui singoli elementi interattivi */
+        }
+        #emotion-info-panel.hidden { /* Aggiunto hidden anche qui per gestione iniziale */
+            display: none;
+        }
+        #emotion-info-panel h3 {
+            @apply text-xl font-bold text-gray-800 mb-2;
+        }
+        #emotion-info-panel p {
+            @apply text-gray-700 text-sm leading-relaxed;
+        }
+        #emotion-info-panel button {
+            /* Colore viola per il pulsante di generazione scenario */
+            @apply mt-2 px-4 py-2 bg-purple-600 text-white font-semibold rounded-md shadow-md hover:bg-purple-700 transition duration-300 ease-in-out;
+            pointer-events: auto; /* Riattiva gli eventi del mouse per il pulsante */
+        }
+        #emotion-info-panel .close-button {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            pointer-events: auto; /* Riattiva gli eventi del mouse per il pulsante di chiusura */
+        }
+        #loading-indicator {
+            @apply text-gray-500 text-center animate-pulse;
+        }
+        #scenario-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        #scenario-context-input {
+            @apply p-2 border border-gray-300 rounded-md text-gray-800;
+        }
+
+        /* Nuovo stile per il tooltip minimale */
+        #emotion-tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            pointer-events: none; /* Non deve bloccare gli eventi sottostanti */
+            z-index: 101; /* Sopra il pannello principale */
+            white-space: nowrap; /* Evita che il testo vada a capo */
+            transform: translate(-50%, -100%); /* Posiziona sopra il cursore */
+        }
+        #emotion-tooltip.hidden {
+            display: none;
+        }
+        #cluster-filters {
+            display: flex; /* Imposta flexbox */
+            flex-wrap: wrap; /* Permette ai filtri di andare a capo */
+            gap: 0.75rem;
+            padding: 0.5rem;
+            background-color: #222222; /* Sfondo leggermente più chiaro per i filtri */
+            border-radius: 0.5rem;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            justify-content: center; /* Centra i filtri orizzontalmente */
+        }
+        #cluster-filters .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #cluster-filters input[type="checkbox"] {
+            @apply h-4 w-4 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-500;
+            cursor: pointer;
+        }
+        #cluster-filters label {
+            @apply text-white text-sm font-medium;
+            cursor: pointer;
+        }
+
+        /* Stili per il tutorial modal */
+        #tutorial-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Sfondo più scuro per maggiore enfasi */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200; /* Sopra tutto il resto */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+        }
+        #tutorial-modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        #tutorial-modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem; /* Padding aumentato */
+            border-radius: 1.5rem; /* Bordi più arrotondati */
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); /* Ombra più pronunciata */
+            max-width: 600px; /* Larghezza massima aumentata */
+            text-align: left; /* Testo allineato a sinistra per migliore leggibilità */
+            position: relative;
+            transform: translateY(-20px); /* Leggero effetto di entrata */
+            transition: transform 0.3s ease-out;
+        }
+        #tutorial-modal-overlay.open #tutorial-modal-content {
+            transform: translateY(0);
+        }
+        #tutorial-modal-content .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        #tutorial-modal-content h2 {
+            @apply text-3xl font-extrabold text-gray-900; /* Titolo più grande e in grassetto */
+        }
+        #tutorial-modal-content .close-modal-button {
+            background: none;
+            border: none;
+            font-size: 2.5rem; /* Dimensione dell'icona di chiusura */
+            cursor: pointer;
+            color: #999;
+            line-height: 1; /* Allineamento verticale */
+            transition: color 0.2s ease-in-out;
+        }
+        #tutorial-modal-content .close-modal-button:hover {
+            color: #333;
+        }
+        #tutorial-modal-content p {
+            @apply text-gray-700 text-base mb-4; /* Margine inferiore per paragrafi */
+            line-height: 1.6; /* Interlinea migliorata */
+        }
+        #tutorial-modal-content ul {
+            @apply list-disc list-inside text-gray-700 text-base mb-4; /* Stile lista */
+            padding-left: 1rem; /* Indentazione lista */
+        }
+        #tutorial-modal-content li {
+            margin-bottom: 0.5rem;
+        }
+        #tutorial-modal-content strong {
+            @apply text-gray-900; /* Testo in grassetto più scuro */
+        }
+        #tutorial-modal-content .modal-footer {
+            margin-top: 2rem;
+            text-align: center;
+        }
+        #tutorial-modal-content button#closeTutorialButton {
+            @apply px-8 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition duration-300 ease-in-out; /* Pulsante più grande e arrotondato */
+            letter-spacing: 0.05em; /* Spaziatura lettere */
+        }
+    </style>
+</head>
+<body>
+    <h1>Mappa Emozionale Vettoriale 3D</h1>
+    <div id="scene-container">
+        <div id="emotion-info-panel" class="hidden">
+            <button class="close-button" id="closePanelButton">&times;</button>
+            <h3 id="emotion-title"></h3>
+            <p id="emotion-description"></p>
+            <div id="scenario-input-group">
+                <input type="text" id="scenario-context-input" placeholder="Aggiungi contesto (es. per un bambino)" class="hidden">
+                <button id="generate-scenario-button" class="hidden">Genera Scenario ✨</button>
+            </div>
+        </div>
+        <div id="emotion-tooltip" class="hidden"></div>
+    </div>
+
+    <div id="controls">
+        <button id="stopButton" class="control-button">Stop</button>
+        <button id="runButton" class="control-button">Run</button>
+        <button id="resetButton" class="control-button">Reset</button>
+        <button id="zoomInButton" class="control-button">+</button>
+        <button id="zoomOutButton" class="control-button">-</button>
+        <button id="fullscreenButton" class="control-button">Schermo Intero</button>
+
+        <div id="cluster-filters" class="w-full mt-4">
+            </div>
+    </div>
+
+    <div id="tutorial-modal-overlay" class="hidden">
+        <div id="tutorial-modal-content">
+            <div class="modal-header">
+                <h2>Benvenuto nella Mappa Emozionale Vettoriale 3D!</h2>
+                <button class="close-modal-button" id="closeTutorialButtonTop">&times;</button>
+            </div>
+            <p>Esplora il mondo delle emozioni in un modo completamente nuovo. Questa mappa ti permette di visualizzare le emozioni in uno spazio tridimensionale, comprendendo le loro relazioni e sfumature.</p>
+            
+            <p class="mt-4">
+                <strong>Navigazione:</strong>
+                <ul>
+                    <li>Trascina il mouse (o il dito) sulla mappa per ruotarla e osservarla da diverse angolazioni.</li>
+                    <li>Usa la rotellina del mouse (o i pulsanti +/-) per avvicinarti o allontanarti (zoom).</li>
+                    <li>I pulsanti "Stop", "Run" e "Reset" controllano l'animazione di rotazione automatica della mappa.</li>
+                </ul>
+            </p>
+            <p class="mt-2">
+                <strong>Interazione con le Emozioni:</strong>
+                <ul>
+                    <li>Passa il cursore su una sfera (emozione) per visualizzare rapidamente il suo nome.</li>
+                    <li>Clicca su una sfera per aprire un pannello laterale con una descrizione dettagliata dell'emozione e l'opzione per generare scenari personalizzati.</li>
+                    <li>Utilizza i filtri in basso per mostrare o nascondere specifici gruppi di emozioni (cluster).</li>
+                </ul>
+            </p>
+            <div class="modal-footer">
+                <button id="closeTutorialButton">Inizia l'Esplorazione</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Inizializzazione delle variabili globali per Firebase (se necessario in futuro)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Dati dei cluster emozionali con coordinate e valori Z
+        // Le coordinate Y sono invertite per allinearsi con la mappa fornita (Y positiva in alto nel grafico 2D)
+        const emotionData = [
+            // Positività (combines original Estasi and Altruismo)
+            { emotion: "Felicità", x: -5, y: 3, z: 3.0, cluster: "Positività", baseColor: 0x4CAF50 },
+            { emotion: "Empatia", x: -5, y: 8, z: 4.0, cluster: "Positività", baseColor: 0x4CAF50 },
+            { emotion: "Estasi", x: -7, y: 7, z: 4.5, cluster: "Positività", baseColor: 0x4CAF50 },
+            { emotion: "Gratitudine", x: -4, y: 7, z: 3.8, cluster: "Positività", baseColor: 0x4CAF50 },
+            { emotion: "Solidarietà", x: 0, y: 6, z: 3.7, cluster: "Positività", baseColor: 0x4CAF50 },
+            { emotion: "Soddisfazione", x: -6, y: 2, z: 2.8, cluster: "Positività", baseColor: 0x4CAF50 },
+            { emotion: "Collaborazione", x: 6, y: 9, z: 3.9, cluster: "Positività", baseColor: 0x2196F3 },
+            { emotion: "Altruismo", x: 8, y: 8, z: 4.2, cluster: "Positività", baseColor: 0x2196F3 },
+            { emotion: "Armonia", x: 4, y: 7, z: 3.6, cluster: "Positività", baseColor: 0x2196F3 },
+            { emotion: "Benevolenza", x: 2, y: 6, z: 3.5, cluster: "Positività", baseColor: 0x2196F3 },
+            { emotion: "Generosità Dedizione", x: 7, y: 5, z: 3.2, cluster: "Positività", baseColor: 0x2196F3 },
+            { emotion: "Cooperazione Reciprocità", x: 6, y: 4, z: 3.0, cluster: "Positività", baseColor: 0x2196F3 },
+            { emotion: "Equità Giusto Interesse", x: 7, y: 2, z: 2.5, cluster: "Positività", baseColor: 0x2196F3 },
+
+            // Negatività (combines original Disperazione and Risentimento)
+            { emotion: "Tristezza", x: -7, y: -6, z: -4.0, cluster: "Negatività", baseColor: 0xF44336 },
+            { emotion: "Abbattimento", x: -8, y: -8, z: -4.5, cluster: "Negatività", baseColor: 0xF44336 },
+            { emotion: "Isolamento emotivo", x: -6, y: -8, z: -4.2, cluster: "Negatività", baseColor: 0xF44336 },
+            { emotion: "Cinismo", x: -6, y: -5, z: -4.8, cluster: "Negatività", baseColor: 0x673AB7 },
+            { emotion: "Risentimento", x: -7, y: -7, z: -5.0, cluster: "Negatività", baseColor: 0x673AB7 },
+            { emotion: "Rifiuto", x: -5, y: -4, z: -4.6, cluster: "Negatività", baseColor: 0x673AB7 },
+
+            // Neutralità (filterable neutral emotions, excluding reference points)
+            { emotion: "Calma", x: -5, y: 0, z: 0.5, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Resilienza", x: -3, y: 1, z: 0.8, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Preoccupazione", x: -6, y: -2, z: -0.5, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Delusione", x: -6, y: -4, z: -1.0, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Tristezza (Neutrale)", x: -7, y: -6, z: -1.5, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Cinismo (Neutrale)", x: 2, y: -5, z: -2.0, cluster: "Neutralità", baseColor: 0x9E9E9E }, // Adjusted X slightly
+            { emotion: "Opportunismo (Neutrale)", x: 2, y: -5, z: -1.8, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Difensività", x: 4, y: -4, z: -1.5, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Autosufficienza estrema", x: 4, y: -7, z: -2.0, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Autoconservazione", x: -4, y: -7, z: -2.0, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Isolamento emotivo (Neutrale)", x: -6, y: -8, z: -2.5, cluster: "Neutralità", baseColor: 0x9E9E9E },
+            { emotion: "Abbattimento (Neutrale)", x: -8, y: -8, z: -2.8, cluster: "Neutralità", baseColor: 0x9E9E9E },
+
+            // Egoismo (original cluster)
+            { emotion: "Egoismo", x: 8, y: -4, z: -3.5, cluster: "Egoismo", baseColor: 0xFF9800 },
+            { emotion: "Opportunismo (Egoismo)", x: 6, y: -5, z: -3.2, cluster: "Egoismo", baseColor: 0xFF9800 },
+            { emotion: "Egocentrismo", x: 7, y: -3, z: -3.3, cluster: "Egoismo", baseColor: 0xFF9800 },
+
+            // Equilibrio (new filterable cluster, from original Neutralità that leaned towards balance)
+            { emotion: "Interesse Personale Illuminato Pragmatismo", x: 5, y: -2, z: -0.8, cluster: "Equilibrio", baseColor: 0xADD8E6 }, // Light blue
+            { emotion: "Individualismo Autonomia", x: 6, y: -3, z: -1.0, cluster: "Equilibrio", baseColor: 0xADD8E6 },
+            { emotion: "Egocentrismo Opportunismo (Equilibrio)", x: 7, y: -4, z: -1.2, cluster: "Equilibrio", baseColor: 0xADD8E6 }, // Renamed for clarity
+
+            // Riferimento (always visible)
+            { emotion: "Compassione", x: 0, y: 7, z: 5, cluster: "Riferimento", baseColor: 0x00BCD4 }, // Punto più alto
+            { emotion: "Risentimento (punto basso)", x: 0, y: -7, z: -5, cluster: "Riferimento", baseColor: 0x00BCD4 }, // Punto più basso
+            { emotion: "Neutralità", x: -7, y: 0, z: 0, cluster: "Riferimento", baseColor: 0x9E9E9E },
+            { emotion: "Equilibrio Neutralità", x: 7, y: 0, z: 0, cluster: "Riferimento", baseColor: 0x9E9E9E }
+        ];
+
+        // Definizione dei confini approssimativi per i volumi dei cluster
+        // Ogni cluster ha [minX, maxX, minY, maxY, minZ, maxZ] e un colore base
+        const clusterBoundaries = {
+            "Positività": { x: [-10, 10], y: [2, 10], z: [2.0, 5.0], color: 0x4CAF50 }, // Broader bounds for combined positive
+            "Negatività": { x: [-10, 0], y: [-9, -3], z: [-5.5, -3.5], color: 0xF44336 }, // Broader bounds for combined negative
+            "Neutralità": { x: [-6, 4], y: [-9, 2], z: [-3.0, 1.0], color: 0x9E9E9E }, // Bounds for the filterable neutral emotions
+            "Egoismo": { x: [5, 9], y: [-6, -1], z: [-4.0, -3.0], color: 0xFF9800 },
+            "Equilibrio": { x: [2, 9], y: [-4, -1], z: [-1.5, 0.0], color: 0xADD8E6 } // Bounds for the new Equilibrium cluster
+        };
+
+
+        let scene, camera, renderer;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let rotationSpeed = 0.005;
+        let currentRotationX = 0;
+        let currentRotationY = 0;
+        let targetRotationX = 0;
+        let targetRotationY = 0;
+        const dampingFactor = 0.95; // Fattore di smorzamento per la rotazione
+        let rotationEnabled = true; // Controllo per la rotazione automatica
+
+        // Global map to store Three.js objects per cluster for easy visibility toggling
+        const clusterObjects = new Map(); // Map<string, THREE.Object3D[]>
+
+        // UI elements for emotion info panel
+        let emotionInfoPanel;
+        let emotionTitleElement;
+        let emotionDescriptionElement;
+        let generateScenarioButton;
+        let scenarioContextInput; // Nuovo elemento per l'input del contesto
+        let emotionTooltip; // Elemento per il tooltip minimale
+        let currentSelectedEmotionData = null; // Store the data of the currently selected emotion
+        let previousHoveredEmotion = null; // To track the previously hovered emotion for hover logic
+
+        // Raycaster for click detection
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // Calcola i valori Z minimi e massimi per la normalizzazione del colore
+        const minZ = Math.min(...emotionData.map(d => d.z));
+        const maxZ = Math.max(...emotionData.map(d => d.z));
+        const zRange = maxZ - minZ;
+
+        // Variabili per l'animazione della telecamera
+        const cameraTargetPosition = new THREE.Vector3();
+        const cameraCurrentPosition = new THREE.Vector3();
+        let isCameraAnimating = false;
+        const cameraAnimationDuration = 500; // ms
+
+        // Variabili per il sistema di particelle
+        let particlesGeometry;
+        let particlesMaterial;
+        let particlesMesh;
+
+        /**
+         * @function makeTextSprite
+         * @description Crea una sprite testuale 3D per un'etichetta.
+         * @param {string} message - Il testo da visualizzare.
+         * @param {object} parameters - Parametri per lo stile del testo (fontface, fontsize, textColor).
+         * @returns {THREE.Sprite} Una sprite Three.js contenente il testo.
+         */
+        function makeTextSprite(message, parameters) {
+            if (parameters === undefined) parameters = {};
+            const fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
+            const fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 20; // Dimensione del font ridotta
+            const textColor = parameters.hasOwnProperty("textColor") ? parameters["textColor"] : { r: 0, g: 0, b: 0, a: 1.0 };
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            context.font = "Bold " + fontsize + "px " + fontface;
+
+            // Ottieni le dimensioni del testo
+            const metrics = context.measureText(message);
+            const textWidth = metrics.width;
+
+            // Imposta le dimensioni del canvas per adattarsi al testo
+            canvas.width = textWidth + 10; // Aggiungi un piccolo padding
+            canvas.height = fontsize * 1.4;
+
+            // Ridisegna il contesto con le nuove dimensioni del canvas
+            context.font = "Bold " + fontsize + "px " + fontface;
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+
+            // Colore del testo
+            context.fillStyle = "rgba(" + textColor.r + ", " + textColor.g + ", " + textColor.b + ", " + textColor.a + ")";
+            context.fillText(message, canvas.width / 2, canvas.height / 2);
+
+            // Il contenuto del canvas verrà utilizzato per una texture
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+            texture.needsUpdate = true;
+
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true }); // Etichetta trasparente
+            const sprite = new THREE.Sprite(spriteMaterial);
+            // Scala la sprite in base alle dimensioni del testo, adattata per la visibilità in 3D
+            sprite.scale.set(canvas.width * 0.015, canvas.height * 0.015, 1.0); // Scala della sprite ulteriormente ridotta
+            return sprite;
+        }
+
+        /**
+         * @function getGradedColor
+         * @description Calcola un colore con gradazione basata sul valore Z.
+         * La luminosità del colore base viene modificata in base alla posizione Z.
+         * @param {number} baseHexColor - Il colore esadecimale base del cluster.
+         * @param {number} zValue - Il valore Z dell'emozione.
+         * @returns {number} Il colore esadecimale con la gradazione applicata.
+         */
+        function getGradedColor(baseHexColor, zValue) {
+            const color = new THREE.Color(baseHexColor);
+            const hsl = {};
+            color.getHSL(hsl);
+
+            // Normalizza il valore Z nell'intervallo [0, 1]
+            const normalizedZ = zRange > 0 ? (zValue - minZ) / zRange : 0.5;
+
+            // Mappa il valore Z normalizzato a un intervallo di luminosità desiderato (es. da 0.3 a 0.9)
+            // Le emozioni più "basse" (Z negativo) avranno una luminosità inferiore, quelle più "alte" (Z positivo) una luminosità maggiore.
+            const minLightness = 0.3;
+            const maxLightness = 0.9;
+            const newLightness = minLightness + normalizedZ * (maxLightness - minLightness);
+
+            color.setHSL(hsl.h, hsl.s, newLightness);
+            return color.getHex();
+        }
+
+        /**
+         * @function init
+         * @description Inizializza la scena 3D, la telecamera, il renderer e aggiunge luci e oggetti.
+         */
+        function init() {
+            // Ottieni il container della scena
+            const container = document.getElementById('scene-container');
+
+            // Inizializza gli elementi UI
+            emotionInfoPanel = document.getElementById('emotion-info-panel');
+            emotionTitleElement = document.getElementById('emotion-title');
+            emotionDescriptionElement = document.getElementById('emotion-description');
+            generateScenarioButton = document.getElementById('generate-scenario-button');
+            scenarioContextInput = document.getElementById('scenario-context-input'); // Inizializza l'input del contesto
+            emotionTooltip = document.getElementById('emotion-tooltip'); // Inizializza il tooltip
+
+            // Scena
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xd0d8e0); // Sfondo leggermente più scuro
+
+            // Telecamera
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 0, 30); // Posizione iniziale della telecamera
+            cameraCurrentPosition.copy(camera.position); // Inizializza la posizione corrente
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // Aggiungi luci
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Luce ambientale
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Luce direzionale
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
+
+            // Crea i volumi dei cluster
+            createClusterVolumes();
+
+            // Crea i punti delle emozioni, le linee vettoriali e le etichette
+            createEmotionPointsAndVectors();
+
+            // Crea il sistema di particelle
+            createParticleSystem();
+
+            // Gestori eventi per l'interazione del mouse
+            container.addEventListener('mousemove', onMouseMove); // Gestisce il tooltip all'hover
+            container.addEventListener('mouseleave', onMouseLeaveCanvas); // Nasconde tooltip e pannello se si esce dal canvas
+            container.addEventListener('mousedown', onMouseDown); // Per la rotazione manuale
+            container.addEventListener('mouseup', onMouseUp); // Per la rotazione manuale
+            container.addEventListener('click', onCanvasClick); // Gestisce il click per il pannello info e API
+            container.addEventListener('wheel', onMouseWheel); // Per lo zoom con rotellina
+
+            // Gestori eventi touch per dispositivi mobili
+            container.addEventListener('touchstart', onTouchStart);
+            container.addEventListener('touchmove', onTouchMove);
+            container.addEventListener('touchend', onTouchEnd);
+
+            // Gestore per il ridimensionamento della finestra
+            window.addEventListener('resize', onWindowResize);
+
+            // Aggiungi event listener per i pulsanti di controllo
+            document.getElementById('stopButton').addEventListener('click', () => rotationEnabled = false);
+            document.getElementById('runButton').addEventListener('click', () => rotationEnabled = true);
+            document.getElementById('resetButton').addEventListener('click', resetCameraAndRotation);
+            document.getElementById('zoomInButton').addEventListener('click', () => animateCameraZoom(camera.position.z - 5));
+            document.getElementById('zoomOutButton').addEventListener('click', () => animateCameraZoom(camera.position.z + 5));
+            document.getElementById('fullscreenButton').addEventListener('click', toggleFullscreen); // Event listener per il nuovo pulsante
+
+            // Aggiungi event listener per i pulsanti del pannello informazioni
+            document.getElementById('closePanelButton').addEventListener('click', hideEmotionInfoPanel);
+            generateScenarioButton.addEventListener('click', () => {
+                if (currentSelectedEmotionData) {
+                    // Passa anche il contesto dell'input
+                    generateEmotionScenario(currentSelectedEmotionData.emotion, scenarioContextInput.value);
+                }
+            });
+
+            // Crea e aggiungi i filtri dei cluster
+            createClusterFilters();
+
+            // Mostra il tutorial all'avvio e aggiungi listener per i suoi pulsanti
+            showTutorial();
+            document.getElementById('closeTutorialButton').addEventListener('click', hideTutorial);
+            document.getElementById('closeTutorialButtonTop').addEventListener('click', hideTutorial);
+
+
+            // Avvia il loop di animazione
+            animate();
+        }
+
+        /**
+         * @function createClusterVolumes
+         * @description Crea e aggiunge i volumi trasparenti per ogni cluster alla scena.
+         */
+        function createClusterVolumes() {
+            for (const clusterName in clusterBoundaries) {
+                const bounds = clusterBoundaries[clusterName];
+                const width = bounds.x[1] - bounds.x[0];
+                const height = bounds.y[1] - bounds.y[0];
+                const depth = bounds.z[1] - bounds.z[0];
+
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const material = new THREE.MeshBasicMaterial({
+                    color: bounds.color,
+                    transparent: true,
+                    opacity: 0.1, // Molto trasparente
+                    side: THREE.DoubleSide // Rende visibili entrambi i lati del cubo
+                });
+
+                const mesh = new THREE.Mesh(geometry, material);
+                // Posiziona il centro del cubo
+                mesh.position.set(
+                    bounds.x[0] + width / 2,
+                    bounds.y[0] + height / 2,
+                    bounds.z[0] + depth / 2
+                );
+                scene.add(mesh);
+
+                // Aggiungi il volume al map di clusterObjects
+                if (!clusterObjects.has(clusterName)) {
+                    clusterObjects.set(clusterName, []);
+                }
+                clusterObjects.get(clusterName).push(mesh);
+            }
+        }
+
+        /**
+         * @function createEmotionPointsAndVectors
+         * @description Popola la scena con le sfere delle emozioni, i vettori e le etichette testuali.
+         */
+        function createEmotionPointsAndVectors() {
+            const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32); // Geometria standard per i punti
+
+            emotionData.forEach(data => {
+                // Ottieni il colore con gradazione basata sul valore Z
+                const gradedColor = getGradedColor(data.baseColor, data.z);
+
+                let currentSphereGeometry = sphereGeometry;
+                let sphereRadius = 0.5; // Raggio base
+                let sphereScale = 1.0; // Scala base
+
+                // Personalizzazione per i punti chiave
+                if (data.cluster === "Riferimento") {
+                    sphereRadius = 0.7; // Raggio leggermente più grande
+                    currentSphereGeometry = new THREE.SphereGeometry(sphereRadius, 32, 32);
+                    sphereScale = 1.2; // Aumenta la scala per l'emozione stessa
+                }
+
+                // Crea il punto dell'emozione (sfera)
+                const material = new THREE.MeshPhongMaterial({
+                    color: gradedColor,
+                    emissive: data.cluster === "Riferimento" ? new THREE.Color(gradedColor).multiplyScalar(0.2) : 0x000000 // Aggiungi un leggero glow
+                });
+                const emotionSphere = new THREE.Mesh(currentSphereGeometry, material);
+                emotionSphere.position.set(data.x, data.y, data.z);
+                emotionSphere.scale.set(sphereScale, sphereScale, sphereScale); // Applica la scala
+                emotionSphere.userData = data; // Associa i dati dell'emozione alla sfera
+                scene.add(emotionSphere);
+
+                // Crea la linea vettoriale dall'origine al punto dell'emozione
+                const points = [];
+                points.push(new THREE.Vector3(0, 0, 0)); // Origine
+                points.push(new THREE.Vector3(data.x, data.y, data.z)); // Punto dell'emozione
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                const lineMaterial = new THREE.LineBasicMaterial({ color: gradedColor, linewidth: 2 }); // Linea colorata con gradazione
+                const emotionLine = new THREE.Line(lineGeometry, lineMaterial);
+                scene.add(emotionLine);
+
+                // Crea e posiziona l'etichetta testuale per l'emozione
+                const emotionLabel = makeTextSprite(data.emotion, { fontsize: 20, textColor: { r: 0, g: 0, b: 0, a: 1.0 } }); // Testo nero
+                // Offset l'etichetta leggermente sopra la sfera per evitare sovrapposizioni
+                emotionLabel.position.set(data.x, data.y + 1.0, data.z);
+                scene.add(emotionLabel);
+
+                // Aggiungi gli oggetti al map de clusterObjects
+                if (!clusterObjects.has(data.cluster)) {
+                    clusterObjects.set(data.cluster, []);
+                }
+                clusterObjects.get(data.cluster).push(emotionSphere, emotionLine, emotionLabel);
+            });
+        }
+
+        /**
+         * @function createParticleSystem
+         * @description Crea un sottile sistema di particelle per lo sfondo.
+         */
+        function createParticleSystem() {
+            particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 1000; // Numero di particelle
+            const posArray = new Float32Array(particlesCount * 3);
+
+            for (let i = 0; i < particlesCount * 3; i++) {
+                // Posiziona le particelle in un cubo più grande della scena
+                posArray[i] = (Math.random() - 0.5) * 100;
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+            particlesMaterial = new THREE.PointsMaterial({
+                size: 0.1, // Dimensione delle particelle
+                color: 0xaaaaaa, // Colore grigio chiaro
+                transparent: true,
+                opacity: 0.5,
+                blending: THREE.AdditiveBlending // Rende le particelle luminose
+            });
+
+            particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+        }
+
+        /**
+         * @function createClusterFilters
+         * @description Crea dinamicamente i checkbox per filtrare i cluster.
+         */
+        function createClusterFilters() {
+            const filterContainer = document.getElementById('cluster-filters');
+            // Nuovi nomi dei cluster per i filtri
+            const filterableClusters = ["Positività", "Negatività", "Neutralità", "Egoismo", "Equilibrio"];
+
+            filterableClusters.forEach(clusterName => {
+                const checkboxId = `filter-${clusterName.replace(/\s/g, '-')}`;
+                const div = document.createElement('div');
+                div.className = 'filter-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = checkboxId;
+                checkbox.checked = true; // Tutti visibili per default
+                checkbox.className = 'form-checkbox h-4 w-4 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-500';
+
+                const label = document.createElement('label');
+                label.htmlFor = checkboxId;
+                label.textContent = clusterName;
+                label.className = 'text-white text-sm';
+
+                checkbox.addEventListener('change', (event) => {
+                    // La logica di visibilità deve ora gestire i nuovi raggruppamenti
+                    toggleClusterVisibility(clusterName, event.target.checked);
+                });
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                filterContainer.appendChild(div);
+            });
+        }
+
+        /**
+         * @function toggleClusterVisibility
+         * @description Toglie o rende visibili tutti gli oggetti associati a un cluster.
+         * @param {string} filterName - Il nome del filtro (nuova categoria) da modificare.
+         * @param {boolean} isVisible - True per rendere visibile, false per nascondere.
+         */
+        function toggleClusterVisibility(filterName, isVisible) {
+            // FIX: Ricalcola la visibilità di tutti gli oggetti in base allo stato di tutti i filtri
+            // Questo è un approccio più robusto per la filtrazione multipla
+            const currentFilterStates = new Map();
+            document.querySelectorAll('#cluster-filters input[type="checkbox"]').forEach(checkbox => {
+                currentFilterStates.set(checkbox.id.replace('filter-', ''), checkbox.checked);
+            });
+
+            emotionData.forEach(data => {
+                if (data.cluster === "Riferimento") {
+                    // I punti di riferimento sono sempre visibili
+                    if (clusterObjects.has(data.cluster)) {
+                        clusterObjects.get(data.cluster).forEach(obj => obj.visible = true);
+                    }
+                } else {
+                    // Per gli altri cluster, la visibilità dipende dallo stato del loro filtro
+                    const isClusterVisibleByFilter = currentFilterStates.get(data.cluster);
+                    if (clusterObjects.has(data.cluster)) {
+                        clusterObjects.get(data.cluster).forEach(obj => obj.visible = isClusterVisibleByFilter);
+                    }
+                }
+            });
+        }
+
+
+        /**
+         * @function onWindowResize
+         * @description Gestisce il ridimensionamento della finestra per mantenere la responsività del canvas.
+         */
+        function onWindowResize() {
+            const container = document.getElementById('scene-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        /**
+         * @function onMouseDown
+         * @description Inizia il trascinamento per la rotazione della scena.
+         * @param {MouseEvent} event - L'evento del mouse.
+         */
+        function onMouseDown(event) {
+            isDragging = true;
+            rotationEnabled = false; // Ferma la rotazione automatica quando si trascina
+            previousMousePosition.x = event.clientX;
+            previousMousePosition.y = event.clientY;
+            document.body.style.cursor = 'grabbing';
+        }
+
+        /**
+         * @function onMouseMove
+         * @description Gestisce il movimento del mouse per la rotazione della scena e l'interazione al passaggio del cursore (tooltip).
+         * @param {MouseEvent} event - L'evento del mouse.
+         */
+        function onMouseMove(event) {
+            if (isDragging) {
+                const deltaX = event.clientX - previousMousePosition.x;
+                const deltaY = event.clientY - previousMousePosition.y;
+
+                // Aggiorna le rotazioni target
+                targetRotationY += deltaX * rotationSpeed;
+                targetRotationX += deltaY * rotationSpeed;
+
+                previousMousePosition.x = event.clientX;
+                previousMousePosition.y = event.clientY;
+            } else {
+                // Logica per l'hover del tooltip e effetti visivi
+                const container = document.getElementById('scene-container');
+                mouse.x = (event.clientX / container.clientWidth) * 2 - 1;
+                mouse.y = -(event.clientY / container.clientHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(scene.children);
+
+                // Filtra solo le sfere delle emozioni (che hanno userData.emotion)
+                const hoveredEmotionSphere = intersects.find(i => i.object.userData && i.object.userData.emotion && i.object.visible && i.object.geometry.type === 'SphereGeometry');
+
+                if (hoveredEmotionSphere) {
+                    // Mostra tooltip
+                    showTooltip(event.clientX, event.clientY, hoveredEmotionSphere.object.userData.emotion);
+
+                    // Applica effetto di scala/pulsazione all'oggetto hoverato
+                    if (hoveredEmotionSphere.object !== previousHoveredEmotion) {
+                        if (previousHoveredEmotion && previousHoveredEmotion.userData && previousHoveredEmotion.userData.originalScale) {
+                            // Ripristina la scala dell'oggetto precedentemente hoverato
+                            previousHoveredEmotion.scale.copy(previousHoveredEmotion.userData.originalScale);
+                        }
+                        // Salva la scala originale e applica la nuova scala
+                        hoveredEmotionSphere.object.userData.originalScale = hoveredEmotionSphere.object.scale.clone();
+                        hoveredEmotionSphere.object.scale.multiplyScalar(1.1); // Ingrandisce del 10%
+                        previousHoveredEmotion = hoveredEmotionSphere.object;
+                    }
+                } else {
+                    // Nascondi tooltip se non si è su nessuna sfera
+                    hideTooltip();
+                    // Ripristina la scala dell'oggetto precedentemente hoverato se il mouse si allontana
+                    if (previousHoveredEmotion && previousHoveredEmotion.userData && previousHoveredEmotion.userData.originalScale) {
+                        previousHoveredEmotion.scale.copy(previousHoveredEmotion.userData.originalScale);
+                        previousHoveredEmotion = null;
+                    }
+                }
+            }
+        }
+
+        /**
+         * @function onMouseUp
+         * @description Termina il trascinamento.
+         */
+        function onMouseUp() {
+            isDragging = false;
+            document.body.style.cursor = 'grab';
+        }
+
+        /**
+         * @function onMouseLeaveCanvas
+         * @description Gestisce quando il mouse esce dal canvas per nascondere il tooltip e il pannello informazioni.
+         */
+        function onMouseLeaveCanvas() {
+            hideTooltip();
+            // Nasconde il pannello solo se non si sta trascinando (per evitare flickering durante drag)
+            if (!isDragging) {
+                hideEmotionInfoPanel();
+            }
+            // Ripristina la scala dell'oggetto precedentemente hoverato se il mouse esce dal canvas
+            if (previousHoveredEmotion && previousHoveredEmotion.userData && previousHoveredEmotion.userData.originalScale) {
+                previousHoveredEmotion.scale.copy(previousHoveredEmotion.userData.originalScale);
+                previousHoveredEmotion = null;
+            }
+        }
+
+        /**
+         * @function onCanvasClick
+         * @description Gestisce il click sulla tela per selezionare un'emozione e mostrare il pannello info completo.
+         * @param {MouseEvent} event - L'evento del click.
+         */
+        function onCanvasClick(event) {
+            const container = document.getElementById('scene-container');
+            mouse.x = (event.clientX / container.clientWidth) * 2 - 1;
+            mouse.y = -(event.clientY / container.clientHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children);
+
+            // Filtra solo le sfere delle emozioni visibili (che hanno userData.emotion)
+            const clickedEmotionSphere = intersects.find(i => i.object.userData && i.object.userData.emotion && i.object.visible && i.object.geometry.type === 'SphereGeometry');
+
+            if (clickedEmotionSphere) {
+                const clickedEmotionData = clickedEmotionSphere.object.userData;
+                currentSelectedEmotionData = clickedEmotionData;
+                showEmotionInfoPanel(clickedEmotionData); // Ora chiama l'API solo al click
+            } else {
+                // Se si clicca sullo sfondo, chiudi il pannello (ma non il tooltip)
+                hideEmotionInfoPanel();
+            }
+        }
+
+        /**
+         * @function showTooltip
+         * @description Mostra il tooltip con il nome dell'emozione.
+         * @param {number} x - Coordinata X del mouse.
+         * @param {number} y - Coordinata Y del mouse.
+         * @param {string} emotionName - Nome dell'emozione.
+         */
+        function showTooltip(x, y, emotionName) {
+            emotionTooltip.textContent = emotionName;
+            emotionTooltip.style.left = `${x}px`;
+            emotionTooltip.style.top = `${y}px`;
+            emotionTooltip.classList.remove('hidden');
+        }
+
+        /**
+         * @function hideTooltip
+         * @description Nasconde il tooltip.
+         */
+        function hideTooltip() {
+            emotionTooltip.classList.add('hidden');
+        }
+
+        /**
+         * @function animateCameraZoom
+         * @description Anima lo zoom della telecamera verso una posizione Z target.
+         * @param {number} targetZ - La posizione Z target della telecamera.
+         */
+        function animateCameraZoom(targetZ) {
+            if (isCameraAnimating) return; // Evita animazioni sovrapposte
+
+            targetZ = Math.max(5, Math.min(100, targetZ)); // Limita lo zoom
+            const startZ = camera.position.z;
+            const startTime = performance.now();
+
+            function animateZoom() {
+                const elapsed = performance.now() - startTime;
+                const progress = Math.min(elapsed / cameraAnimationDuration, 1);
+                
+                // Interpolazione lineare per la posizione Z
+                camera.position.z = startZ + (targetZ - startZ) * progress;
+                camera.updateProjectionMatrix();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateZoom);
+                    isCameraAnimating = true;
+                } else {
+                    isCameraAnimating = false;
+                }
+            }
+            animateZoom();
+        }
+
+        /**
+         * @function onMouseWheel
+         * @description Gestisce lo zoom in/out della telecamera con animazione.
+         * @param {WheelEvent} event - L'evento della rotellina del mouse.
+         */
+        function onMouseWheel(event) {
+            // Se la telecamera non è già in animazione, avvia una nuova animazione di zoom
+            if (!isCameraAnimating) {
+                animateCameraZoom(camera.position.z + event.deltaY * 0.1);
+            }
+        }
+
+        /**
+         * @function zoomIn
+         * @description Esegue lo zoom avanti nella scena con animazione.
+         */
+        function zoomIn() {
+            animateCameraZoom(camera.position.z - 5);
+        }
+
+        /**
+         * @function zoomOut
+         * @description Esegue lo zoom indietro nella scena con animazione.
+         */
+        function zoomOut() {
+            animateCameraZoom(camera.position.z + 5);
+        }
+
+        /**
+         * @function showEmotionInfoPanel
+         * @description Mostra il pannello delle informazioni sull'emozione e chiama l'API Gemini.
+         * @param {object} emotionData - I dati dell'emozione selezionata.
+         */
+        async function showEmotionInfoPanel(emotionData) {
+            emotionInfoPanel.classList.remove('hidden');
+            emotionInfoPanel.classList.add('open');
+            emotionTitleElement.textContent = emotionData.emotion;
+            scenarioContextInput.classList.remove('hidden'); // Mostra l'input del contesto
+            scenarioContextInput.value = ''; // Pulisci l'input precedente
+            emotionDescriptionElement.innerHTML = '<div id="loading-indicator">Caricamento descrizione...</div>';
+            generateScenarioButton.classList.add('hidden'); // Nascondi il pulsante scenario finché non è pronto
+
+            // Tentativo di caricare la descrizione (anche se l'API non funziona, per coerenza)
+            try {
+                const description = await generateEmotionDescription(emotionData.emotion);
+                emotionDescriptionElement.textContent = description;
+                generateScenarioButton.classList.remove('hidden'); // Mostra il pulsante scenario
+            } catch (error) {
+                console.error("Errore nel recupero della descrizione:", error);
+                emotionDescriptionElement.textContent = "Errore nel caricamento della descrizione. (Problema API)";
+            }
+        }
+
+        /**
+         * @function hideEmotionInfoPanel
+         * @description Nasconde il pannello delle informazioni sull'emozione.
+         */
+        function hideEmotionInfoPanel() {
+            emotionInfoPanel.classList.remove('open');
+            emotionInfoPanel.classList.add('hidden');
+            scenarioContextInput.classList.add('hidden'); // Nascondi l'input del contesto
+            currentSelectedEmotionData = null;
+        }
+
+        /**
+         * @function generateEmotionDescription
+         * @description Chiama l'API Gemini per ottenere una descrizione dell'emozione.
+         * @param {string} emotionName - Il nome dell'emozione.
+         * @returns {Promise<string>} La descrizione generata da Gemini.
+         */
+        async function generateEmotionDescription(emotionName) {
+            // Questo è un placeholder per la funzione API Gemini
+            // Poiché l'API ha problemi, restituiamo una stringa fissa
+            return `Descrizione di prova per: ${emotionName}. Questa è una descrizione generica in attesa della risoluzione dei problemi API.`;
+            /*
+            emotionDescriptionElement.innerHTML = '<div id="loading-indicator">Caricamento descrizione...</div>';
+            const prompt = `Descrivi l'emozione "${emotionName}" in modo conciso e chiaro, evidenziando le sue caratteristiche principali e come si manifesta. Massimo 50 parole.`;
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // Lascia vuoto per l'API key fornita dall'ambiente Canvas
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`API Error (Description): ${response.status} ${response.statusText} - ${errorText}`);
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    return "Nessuna descrizione trovata.";
+                }
+            } catch (error) {
+                console.error("Errore nella chiamata API Gemini per la descrizione:", error);
+                return "Errore nel caricamento della descrizione.";
+            }
+            */
+        }
+
+        /**
+         * @function generateEmotionScenario
+         * @description Chiama l'API Gemini per ottenere uno scenario che evochi l'emozione, con contesto opzionale.
+         * @param {string} emotionName - Il nome dell'emozione.
+         * @param {string} context - Contesto aggiuntivo fornito dall'utente.
+         * @returns {Promise<string>} Lo scenario generato da Gemini.
+         */
+        async function generateEmotionScenario(emotionName, context = '') {
+            // Questo è un placeholder per la funzione API Gemini
+            // Poiché l'API ha problemi, restituiamo una stringa fissa
+            const scenarioContext = context ? ` con il contesto: "${context}"` : '';
+            return `Scenario di prova per: ${emotionName}${scenarioContext}. Questo è uno scenario generico in attesa della risoluzione dei problemi API.`;
+            /*
+            emotionDescriptionElement.innerHTML = '<div id="loading-indicator">Generazione scenario...</div>';
+            let prompt = `Crea un breve scenario o una situazione che evochi l'emozione di "${emotionName}".`;
+            if (context) {
+                prompt += ` Il contesto è: "${context}".`;
+            }
+            prompt += ` Sii descrittivo ma conciso. Massimo 80 parole.`;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // Lascia vuoto per l'API key fornita dall'ambiente Canvas
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`API Error (Scenario): ${response.status} ${response.statusText} - ${errorText}`);
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    return "Nessuno scenario trovato.";
+                }
+            } catch (error) {
+                console.error("Errore nella chiamata API Gemini per lo scenario:", error);
+                return "Errore nella generazione dello scenario.";
+            }
+            */
+        }
+
+        /**
+         * @function onTouchStart
+         * @description Inizia il trascinamento per la rotazione della scena su touch.
+         * @param {TouchEvent} event - L'evento touch.
+         */
+        function onTouchStart(event) {
+            if (event.touches.length === 1) {
+                isDragging = true;
+                rotationEnabled = false; // Ferma la rotazione automatica quando si trascina
+                previousMousePosition.x = event.touches[0].clientX;
+                previousMousePosition.y = event.touches[0].clientY;
+            }
+        }
+
+        /**
+         * @function onTouchMove
+         * @description Gestisce il movimento touch per la rotazione della scena.
+         * @param {TouchEvent} event - L'evento touch.
+         */
+        function onTouchMove(event) {
+            if (isDragging && event.touches.length === 1) {
+                const deltaX = event.touches[0].clientX - previousMousePosition.x;
+                const deltaY = event.touches[0].clientY - previousMousePosition.y;
+
+                targetRotationY += deltaX * rotationSpeed * 2; // Aumenta la velocità per il touch
+                targetRotationX += deltaY * rotationSpeed * 2;
+
+                previousMousePosition.x = event.touches[0].clientX;
+                previousMousePosition.y = event.touches[0].clientY;
+            }
+        }
+
+        /**
+         * @function onTouchEnd
+         * @description Termina il trascinamento touch.
+         */
+        function onTouchEnd() {
+            isDragging = false;
+        }
+
+        /**
+         * @function resetCameraAndRotation
+         * @description Resetta la posizione della telecamera e la rotazione della scena ai valori iniziali con animazione.
+         */
+        function resetCameraAndRotation() {
+            const initialCameraPosition = new THREE.Vector3(0, 0, 30);
+            const initialSceneRotation = new THREE.Euler(0, 0, 0); // Rotazione iniziale della scena
+
+            const startCameraPosition = camera.position.clone();
+            const startSceneRotation = scene.rotation.clone();
+
+            const startTime = performance.now();
+
+            function animateReset() {
+                const elapsed = performance.now() - startTime;
+                const progress = Math.min(elapsed / cameraAnimationDuration, 1);
+
+                // Anima la posizione della telecamera
+                camera.position.lerpVectors(startCameraPosition, initialCameraPosition, progress);
+                
+                // Anima la rotazione della scena
+                scene.rotation.x = startSceneRotation.x + (initialSceneRotation.x - startSceneRotation.x) * progress;
+                scene.rotation.y = startSceneRotation.y + (initialSceneRotation.y - startSceneRotation.y) * progress;
+                scene.rotation.z = startSceneRotation.z + (initialSceneRotation.z - startSceneRotation.z) * progress;
+
+                camera.updateProjectionMatrix();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateReset);
+                    isCameraAnimating = true; // Mantieni true durante l'animazione
+                } else {
+                    isCameraAnimating = false;
+                    currentRotationX = 0; // Resetta i valori di rotazione per la rotazione automatica
+                    currentRotationY = 0;
+                    targetRotationX = 0;
+                    targetRotationY = 0;
+                    rotationEnabled = true; // Riattiva la rotazione automatica dopo il reset
+                    hideEmotionInfoPanel(); // Nasconde il pannello informazioni al reset
+                    hideTooltip(); // Nasconde anche il tooltip
+                }
+            }
+            animateReset();
+        }
+
+
+        /**
+         * @function toggleFullscreen
+         * @description Attiva/disattiva la modalità a schermo intero per il container della scena.
+         */
+        function toggleFullscreen() {
+            const container = document.getElementById('scene-container');
+            if (!document.fullscreenElement) {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.mozRequestFullScreen) { /* Firefox */
+                    container.mozRequestFullScreen();
+                } else if (container.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) { /* IE/Edge */
+                    container.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) { /* Firefox */
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { /* IE/Edge */
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
+        /**
+         * @function showTutorial
+         * @description Mostra il modal del tutorial all'avvio.
+         */
+        function showTutorial() {
+            document.getElementById('tutorial-modal-overlay').classList.add('open'); // Usa la classe open per la transizione
+        }
+
+        /**
+         * @function hideTutorial
+         * @description Nasconde il modal del tutorial.
+         */
+        function hideTutorial() {
+            document.getElementById('tutorial-modal-overlay').classList.remove('open'); // Rimuove la classe open per la transizione
+        }
+
+        /**
+         * @function animate
+         * @description Il loop di animazione principale per il rendering della scena.
+         */
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Anima le particelle
+            if (particlesMesh) {
+                particlesMesh.rotation.y += 0.0005; // Rotazione lenta delle particelle
+                particlesMesh.rotation.x += 0.0002;
+            }
+
+            if (rotationEnabled && !isDragging && !isCameraAnimating) { // Assicurati che non ci siano animazioni della telecamera in corso
+                targetRotationY += 0.001; // Rotazione automatica lenta sull'asse Y
+            }
+
+            // Applica smorzamento alla rotazione per un movimento più fluido
+            currentRotationY += (targetRotationY - currentRotationY) * (1 - dampingFactor);
+            currentRotationX += (targetRotationX - currentRotationX) * (1 - dampingFactor);
+
+            scene.rotation.y = currentRotationY;
+            scene.rotation.x = currentRotationX;
+
+            renderer.render(scene, camera);
+        }
+
+        // Avvia l'applicazione quando la finestra è completamente caricata
+        window.onload = init;
+    </script>
+</body>
+</html>
