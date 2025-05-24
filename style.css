@@ -37,6 +37,10 @@ canvas {
   flex-direction: column; /* Pulsanti in colonna */
   gap: 15px; /* Spazio tra i pulsanti */
   z-index: 1000; /* Assicura che i pulsanti siano sopra il canvas */
+  background-color: rgba(0, 0, 0, 0.7); /* Sfondo per la barra laterale */
+  padding: 10px; /* Padding interno alla barra */
+  border-radius: 8px; /* Bordi arrotondati */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* Ombra */
 }
 
 /* --- Stili per i Link di Navigazione (TAG <a> con classe nav-button) --- */
@@ -96,12 +100,14 @@ canvas {
 }
 
 
-/* --- Stili per la sezione AI (usata in index.html) --- */
+/* --- Stili per la sezione AI (usata in ask_ai.html) --- */
+/* NOTA: Questi stili devono essere specifici per la pagina ask_ai.html */
+/* Se li applichi globalmente, potrebbero influenzare altre pagine */
+/* Li ho mantenuti qui per coerenza, ma valuta se spostarli in ask_ai.html <style> o mantenerli generici */
 .ai-chat-container {
-  position: fixed; /* Mantieni visibile anche scorrendo */
-  bottom: 20px; /* Distanza dal bordo inferiore per desktop */
-  left: 20px; /* <--- CAMBIATO DA right A left */
-  /* right: 20px; /* <--- Rimosso */
+  /* position: fixed; /* Rimosso, il chat container non è fisso sulla pagina ask_ai.html */
+  /* bottom: 20px; */
+  /* left: 20px; */
   width: 320px; /* Larghezza di default per desktop */
   max-width: calc(100vw - 40px); /* Impedisce che sia più largo della viewport meno i margini */
   background-color: rgba(30, 30, 40, 0.95); /* Sfondo scuro semi-trasparente */
@@ -114,6 +120,8 @@ canvas {
   flex-direction: column;
   gap: 10px; /* Spazio tra gli elementi */
   box-sizing: border-box; /* Include padding nel calcolo della larghezza */
+  /* Margin per posizionare il chat container nel flusso della pagina */
+  margin: 80px auto 20px auto; /* Centra orizzontalmente e aggiunge spazio */
 }
 
 .ai-chat-container label {
@@ -319,3 +327,4 @@ canvas {
 @media (max-width: 768px) {
     /* Riduci la larghezza massima dei contenitori principali */
     .page-content, .form-container, .podcast-
+}
