@@ -326,5 +326,56 @@ canvas {
 /* Aggiustamenti per schermi più piccoli (es. tablet e mobile) */
 @media (max-width: 768px) {
     /* Riduci la larghezza massima dei contenitori principali */
-    .page-content, .form-container, .podcast-
+    .page-content, .form-container, .podcast-container, .ai-chat-container {
+        width: 95%; /* Aumenta la larghezza per mobile */
+        margin-left: auto; /* Centra */
+        margin-right: auto; /* Centra */
+    }
+
+    /* Aggiusta il posizionamento e stile del menu di navigazione */
+    .button-container {
+        position: relative; /* Cambia a relative per farlo fluire con il documento */
+        width: 90%; /* Occupa quasi tutta la larghezza */
+        left: auto; /* Rimuovi posizionamento fisso a sinistra */
+        top: auto; /* Rimuovi posizionamento fisso in alto */
+        transform: none; /* Rimuovi la trasformazione di centratura */
+        flex-direction: row; /* I pulsanti diventano orizzontali */
+        flex-wrap: wrap; /* Permetti ai pulsanti di andare a capo */
+        justify-content: center; /* Centra i pulsanti orizzontalmente */
+        margin: 20px auto; /* Aggiungi margine sopra e sotto, e centra */
+        padding: 10px 5px; /* Riduci il padding per spazi più stretti */
+        gap: 8px; /* Riduci lo spazio tra i pulsanti */
+    }
+
+    .nav-button {
+        flex-grow: 1; /* Permetti ai pulsanti di espandersi per riempire lo spazio disponibile */
+        min-width: unset; /* Rimuovi la larghezza minima fissa */
+        font-size: 12px; /* Riduci la dimensione del font */
+        padding: 8px 10px; /* Riduci il padding */
+    }
+
+    body {
+        /* Rimuovi il padding-left per i piccoli schermi se il menu diventa orizzontale */
+        padding-left: 0;
+        padding-right: 0;
+        align-items: center; /* Centra il contenuto orizzontalmente */
+    }
+}
+
+/* Stili specifici per schermi molto piccoli (es. smartphone) */
+@media (max-width: 480px) {
+    .button-container {
+        padding: 8px 5px;
+        gap: 5px;
+    }
+
+    .nav-button {
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+
+    .page-content, .form-container, .podcast-container, .ai-chat-container {
+        padding: 15px; /* Riduci il padding interno */
+        margin-top: 60px; /* Aggiusta il margine superiore per schermi molto piccoli */
+    }
 }
