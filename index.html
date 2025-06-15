@@ -9,15 +9,18 @@
   <script src="sketch.js"></script>
 </head>
 <body>
-  <div id="navbar-placeholder"></div>
-  <script>
-      fetch('nav.html') // Richiede il file nav.html che contiene il menu
-          .then(response => response.text()) // Converte la risposta in testo
-          .then(data => {
-              document.getElementById('navbar-placeholder').innerHTML = data; // Inserisce il contenuto del menu nel placeholder
-          });
-  </script>
+  <div class="button-container">
+      <a href="index.html" class="nav-button">HOME</a>
+      <a href="about.html" class="nav-button">ABOUT</a>
+      <a href="3dmap.html" class="nav-button">3DMAP</a>
+      <a href="Space_invaders.html" class="nav-button">INVADERS</a>
+      <a href="podcast.html" class="nav-button">PODCAST</a>
+      <a href="badge.html" class="nav-button">BADGE</a>
+      <a href="prompt_optimizer.html" class="nav-button">PROMPT OPTIMIZER</a>
+      <a href="ask_ai.html" class="nav-button">ASK AI</a>
+      <a href="contact.html" class="nav-button">CONTACT</a>
+  </div>
   <script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
   <zapier-interfaces-chatbot-embed is-popup='true' chatbot-id='cmaqmyv4c001i11b886npa6i8'></zapier-interfaces-chatbot-embed>
-  </body>
+</body>
 </html>

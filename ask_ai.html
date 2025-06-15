@@ -141,14 +141,17 @@
   </style>
 </head>
 <body>
-  <div id="navbar-placeholder"></div>
-  <script>
-      fetch('nav.html') // Richiede il file nav.html che contiene il menu
-          .then(response => response.text()) // Converte la risposta in testo
-          .then(data => {
-              document.getElementById('navbar-placeholder').innerHTML = data; // Inserisce il contenuto del menu nel placeholder
-          });
-  </script>
+  <div class="button-container">
+      <a href="index.html" class="nav-button">HOME</a>
+      <a href="about.html" class="nav-button">ABOUT</a>
+      <a href="3dmap.html" class="nav-button">3DMAP</a>
+      <a href="Space_invaders.html" class="nav-button">INVADERS</a>
+      <a href="podcast.html" class="nav-button">PODCAST</a>
+      <a href="badge.html" class="nav-button">BADGE</a>
+      <a href="prompt_optimizer.html" class="nav-button">PROMPT OPTIMIZER</a>
+      <a href="ask_ai.html" class="nav-button">ASK AI</a>
+      <a href="contact.html" class="nav-button">CONTACT</a>
+  </div>
   <div class="ai-chat-container">
     <h1>Ask Anything to Nik Tesla AI</h1>
     <label for="userQuestion">Your Question:</label>
@@ -161,7 +164,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const userQuestionTextarea = document.getElementById('userQuestion');
         const sendQuestionButton = document.getElementById('sendQuestion');
-        const aiResponseDiv = document.getElementById('aiResponse'); // Questo div conterrà la cronologia della chat
+        const aiResponseDiv = document.getElementById('aiResponse');
 
         const API_ENDPOINT_PATH = '/api/ask-ai';
         const AI_API_URL = window.location.origin + API_ENDPOINT_PATH;
@@ -173,7 +176,6 @@
             return;
         }
 
-        // Funzione per aggiungere un messaggio alla cronologia della chat
         function addMessageToChat(sender, message, type) {
             const messageWrapper = document.createElement('div');
             messageWrapper.className = 'chat-message ' + type;
@@ -188,8 +190,8 @@
 
             messageWrapper.appendChild(senderSpan);
             messageWrapper.appendChild(messageText);
-            aiResponseDiv.appendChild(messageWrapper); // Aggiungi il nuovo messaggio al contenitore
-            aiResponseDiv.scrollTop = aiResponseDiv.scrollHeight; // Scorri verso il basso per visualizzare l'ultimo messaggio
+            aiResponseDiv.appendChild(messageWrapper);
+            aiResponseDiv.scrollTop = aiResponseDiv.scrollHeight;
         }
 
         sendQuestionButton.addEventListener('click', async () => {
@@ -200,14 +202,14 @@
                 return;
             }
 
-            addMessageToChat('You', question, 'user-message'); // Aggiungi la domanda dell'utente
-            userQuestionTextarea.value = ''; // Pulisci l'input
+            addMessageToChat('You', question, 'user-message');
+            userQuestionTextarea.value = '';
 
             const thinkingMessage = document.createElement('div');
             thinkingMessage.className = 'chat-message info-message';
             thinkingMessage.innerHTML = '<span class="chat-sender">AI:</span> Thinking...';
-            aiResponseDiv.appendChild(thinkingMessage); // Aggiungi il messaggio "Thinking..."
-            aiResponseDiv.scrollTop = aiResponseDiv.scrollHeight; // Scorri per vederlo
+            aiResponseDiv.appendChild(thinkingMessage);
+            aiResponseDiv.scrollTop = aiResponseDiv.scrollHeight;
 
             sendQuestionButton.disabled = true;
 
@@ -220,7 +222,6 @@
                     body: JSON.stringify({ question: question })
                 });
 
-                // Rimuovi il messaggio "Thinking..."
                 if (aiResponseDiv.contains(thinkingMessage)) {
                     aiResponseDiv.removeChild(thinkingMessage);
                 }
@@ -233,7 +234,7 @@
                 const data = await response.json();
 
                 if (data && data.answer) {
-                    addMessageToChat('AI', data.answer, 'ai-message'); // Aggiungi la risposta dell'AI
+                    addMessageToChat('AI', data.answer, 'ai-message');
                 } else {
                     addMessageToChat('AI', 'Received an invalid response from the AI.', 'error-message');
                     console.error('Unexpected backend response or incorrect format:', data);
@@ -241,7 +242,6 @@
 
             } catch (error) {
                 console.error('Error communicating with AI service:', error);
-                // Rimuovi il messaggio "Thinking..." anche in caso di errore
                 if (aiResponseDiv.contains(thinkingMessage)) {
                     aiResponseDiv.removeChild(thinkingMessage);
                 }

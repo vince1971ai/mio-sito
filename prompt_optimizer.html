@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 
@@ -729,8 +728,18 @@
 </head>
 
 <body>
+  <div class="button-container" style="position: relative; margin: 20px auto; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px; z-index: 1000; background-color: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);">
+      <a href="index.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">HOME</a>
+      <a href="about.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">ABOUT</a>
+      <a href="3dmap.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">3DMAP</a>
+      <a href="Space_invaders.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">INVADERS</a>
+      <a href="podcast.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">PODCAST</a>
+      <a href="badge.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">BADGE</a>
+      <a href="prompt_optimizer.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">PROMPT OPTIMIZER</a>
+      <a href="ask_ai.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">ASK AI</a>
+      <a href="contact.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">CONTACT</a>
+  </div>
   <div class="app-container">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
@@ -739,7 +748,6 @@
         <h1>PromptMaestro</h1>
       </div>
 
-      <!-- Tema -->
       <div class="theme-switch">
         <span class="theme-switch-label">Tema:</span>
         <span class="theme-icon">☀️</span>
@@ -750,7 +758,6 @@
         <span class="theme-icon">🌙</span>
       </div>
 
-      <!-- Categorie -->
       <div class="categories">
         <h3 class="section-title">Categorie</h3>
         <div class="category-filter" id="categories">
@@ -762,16 +769,12 @@
         </div>
       </div>
 
-      <!-- Template -->
       <h3 class="section-title">Template</h3>
       <div class="template-list" id="template-list">
-        <!-- I template verranno generati dinamicamente -->
-      </div>
+        </div>
     </aside>
 
-    <!-- Contenuto principale -->
     <main class="main-content">
-      <!-- Header -->
       <div class="card">
         <div class="card-header">
           <div>
@@ -815,7 +818,6 @@
         </div>
       </div>
 
-      <!-- Editor -->
       <div class="card">
         <h3 class="card-title">
           Editor di Prompt
@@ -832,7 +834,6 @@
         </div>
       </div>
 
-      <!-- Analisi -->
       <div class="card">
         <h3 class="card-title">Analisi del Prompt</h3>
         <p class="card-subtitle">Valutazione della qualità e suggerimenti per migliorare</p>
@@ -865,31 +866,26 @@
 
         <h3 class="section-title">Suggerimenti</h3>
         <div class="suggestions" id="suggestions-list">
-          <!-- I suggerimenti verranno generati dinamicamente -->
           <p class="info-text">Inserisci un prompt per ricevere suggerimenti di miglioramento.</p>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- Pulsante menu mobile -->
   <div class="menu-toggle hidden" id="menu-toggle">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
       <path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path>
     </svg>
   </div>
 
-  <!-- Snackbar -->
   <div class="snackbar" id="snackbar">
     <span class="snackbar-icon">✓</span>
     <span class="snackbar-message" id="snackbar-message"></span>
     <button class="snackbar-close" id="snackbar-close">×</button>
   </div>
 
-  <!-- Onboarding overlay (mostrato solo al primo accesso) -->
   <div class="onboarding hidden" id="onboarding">
-    <!-- Contenuto onboarding -->
-  </div>
+    </div>
 
   <script>
     // Utility functions
@@ -1012,7 +1008,7 @@ Vorrei che le istruzioni fossero:
 - Includendo avvertenze su possibili errori
 - Con suggerimenti per la risoluzione di problemi comuni
 
-Per favore, usa un linguaggio [semplice/tecnico] e formatta il testo per facilitare la lettura.`
+Per favorire, usa un linguaggio [semplice/tecnico] e formatta il testo per facilitare la lettura.`
       },
       {
         id: 5,

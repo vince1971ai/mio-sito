@@ -128,14 +128,17 @@
     </style>
 </head>
 <body>
-    <div id="navbar-placeholder"></div>
-    <script>
-        fetch('nav.html') // Richiede il file nav.html che contiene il menu
-            .then(response => response.text()) // Converte la risposta in testo
-            .then(data => {
-                document.getElementById('navbar-placeholder').innerHTML = data; // Inserisce il contenuto del menu nel placeholder
-            });
-    </script>
+    <div class="button-container">
+        <a href="index.html" class="nav-button">HOME</a>
+        <a href="about.html" class="nav-button">ABOUT</a>
+        <a href="3dmap.html" class="nav-button">3DMAP</a>
+        <a href="Space_invaders.html" class="nav-button">INVADERS</a>
+        <a href="podcast.html" class="nav-button">PODCAST</a>
+        <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="prompt_optimizer.html" class="nav-button">PROMPT OPTIMIZER</a>
+        <a href="ask_ai.html" class="nav-button">ASK AI</a>
+        <a href="contact.html" class="nav-button">CONTACT</a>
+    </div>
     <div class="page-content">
         <h1>The Future of Nik Tesla AI</h1>
         <p>Looking to the future, my commitment is to experiment with ever more innovative solutions and build a community of enthusiasts with whom we can grow together. Feel free to explore projects, leave feedback and follow the evolution of this journey into the world of AI: the best is yet to come!</p>
@@ -155,70 +158,57 @@
                 const analyzeButton = document.getElementById('analyzeSentimentButton');
                 const resultDiv = document.getElementById('sentimentResult');
 
-                // *** URL DELLA TUA FUNZIONE SERVERLESS PYTHON SU VERCEL ***
-                // Usiamo window.location.origin per ottenere la parte base dell'URL
-                // della pagina corrente (es. https://[deployment-id].vercel.app o https://tuo-domino.com)
-                // e aggiungiamo il percorso corretto alla tua API.
-                const API_ENDPOINT_PATH = '/api/sentiment'; // <--- CORRETTO: Deve corrispondere al nome della tua funzione sentiment
+                const API_ENDPOINT_PATH = '/api/sentiment';
                 const SENTIMENT_API_URL = window.location.origin + API_ENDPOINT_PATH;
 
-                console.log("Sentiment API URL being called:", SENTIMENT_API_URL); // Aggiunto log per debug
+                console.log("Sentiment API URL being called:", SENTIMENT_API_URL);
 
-                // --- Controlli di base: verifica che gli elementi HTML per il Sentiment esistano ---
-                // Questo evita errori se il codice JS viene usato su una pagina che non ha la sezione Sentiment
                 if (!sentimentTextarea || !analyzeButton || !resultDiv) {
                     console.warn("Elementi HTML per l'analisi sentiment non trovati. La funzionalità non sarà attiva su questa pagina.");
-                    return; // Esci dalla funzione se non trovi gli elementi
+                    return;
                 }
 
-
-                // Aggiungi un ascoltatore di eventi al pulsante
                 analyzeButton.addEventListener('click', async () => {
                     const textToAnalyze = sentimentTextarea.value.trim();
 
                     if (!textToAnalyze) {
-                        resultDiv.textContent = 'Please enter text to analyze.'; // Messaggio in inglese
-                        resultDiv.style.color = 'orange'; // Colore per avvisi
+                        resultDiv.textContent = 'Please enter text to analyze.';
+                        resultDiv.style.color = 'orange';
                         return;
                     }
 
-                    resultDiv.textContent = 'Analyzing text...'; // Messaggio in inglese
-                    resultDiv.style.color = 'white'; // Colore di default durante l'attesa
-                    analyzeButton.disabled = true; // Disabilita il pulsante durante l'analisi
+                    resultDiv.textContent = 'Analyzing text...';
+                    resultDiv.style.color = 'white';
+                    analyzeButton.disabled = true;
 
                     try {
-                        // Fai la chiamata HTTP (fetch) alla tua funzione serverless Python
-                        const response = await fetch(SENTIMENT_API_URL, { // Usa l'URL corretto
+                        const response = await fetch(SENTIMENT_API_URL, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ text: textToAnalyze }) // Invia il testo nel corpo della richiesta
+                            body: JSON.stringify({ text: textToAnalyze })
                         });
 
                         if (!response.ok) {
                              const errorBody = await response.text();
-                             // Aggiunto un messaggio di errore più dettagliato per il debug
-                             throw new Error(`Backend HTTP error: ${response.status} ${response.statusText} - Response: ${errorBody}`); // Messaggio in inglese
+                             throw new Error(`Backend HTTP error: ${response.status} ${response.statusText} - Response: ${errorBody}`);
                         }
 
-                        const data = await response.json(); // Assumi che il backend risponda con JSON
+                        const data = await response.json();
 
-                        // Mostra il risultato
-                        // Assumi che il backend sentiment restituisca { sentiment: "..." }
                         if (data && data.sentiment) {
                             let displayResult = `Sentiment: ${data.sentiment}`;
-                            let resultColor = 'white'; // Default color
+                            let resultColor = 'white';
 
-                            // Aggiungi emoji o colori in base al sentiment (se il backend li fornisce o li decidi qui)
-                            if (data.sentiment === 'positive') { // Assumi che il backend restituisca 'positive', 'negative', 'neutral'
-                                displayResult = 'Sentiment: Positive 😊'; // Mostra in inglese
+                            if (data.sentiment === 'positive') {
+                                displayResult = 'Sentiment: Positive 😊';
                                 resultColor = 'lightgreen';
                             } else if (data.sentiment === 'negative') {
-                                displayResult = 'Sentiment: Negative 😠'; // Mostra in inglese
+                                displayResult = 'Sentiment: Negative 😠';
                                 resultColor = 'salmon';
-                            } else { // Neutro
-                                displayResult = 'Sentiment: Neutral 😐'; // Mostra in inglese
+                            } else {
+                                displayResult = 'Sentiment: Neutral 😐';
                                 resultColor = 'lightblue';
                             }
 
@@ -226,18 +216,17 @@
                             resultDiv.style.color = resultColor;
 
                         } else {
-                            resultDiv.textContent = 'Invalid response received from the backend.'; // Messaggio in inglese
+                            resultDiv.textContent = 'Invalid response received from the backend.';
                             resultDiv.style.color = 'orange';
                             console.error('Unexpected backend response or incorrect format:', data);
                         }
 
                     } catch (error) {
-                        console.error('Error communicating with sentiment analysis service:', error); // Messaggio in inglese
-                        // Messaggio di errore più dettagliato
-                        resultDiv.textContent = `Error: ${error.message || 'Could not connect to sentiment analysis service or process request.'}`; // Messaggio in inglese
-                        resultDiv.style.color = 'red'; // Colore per errori
+                        console.error('Error communicating with sentiment analysis service:', error);
+                        resultDiv.textContent = `Error: ${error.message || 'Could not connect to sentiment analysis service or process request.'}`;
+                        resultDiv.style.color = 'red';
                     } finally {
-                        analyzeButton.disabled = false; // Riabilita il pulsante
+                        analyzeButton.disabled = false;
                     }
                 });
             });

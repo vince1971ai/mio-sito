@@ -132,6 +132,17 @@
     </style>
 </head>
 <body>
+    <div class="button-container" style="position: absolute; top: 10px; width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px; z-index: 1000; background-color: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);">
+        <a href="index.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">HOME</a>
+        <a href="about.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">ABOUT</a>
+        <a href="3dmap.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">3DMAP</a>
+        <a href="Space_invaders.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">INVADERS</a>
+        <a href="podcast.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">PODCAST</a>
+        <a href="badge.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">BADGE</a>
+        <a href="prompt_optimizer.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">PROMPT OPTIMIZER</a>
+        <a href="ask_ai.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">ASK AI</a>
+        <a href="contact.html" class="nav-button" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.8); padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 4px; text-align: center; min-width: 100px; display: block; text-decoration: none;">CONTACT</a>
+    </div>
     <div id="scoreBoard">PUNTEGGIO: <span id="score">0</span> VITE: <span id="lives">3</span> LIVELLO: <span id="level">1</span></div>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
@@ -579,7 +590,7 @@
             // Loop di gioco principale
             function gameLoop() {
                 if (gameOver || gamePaused || !gameStarted) {
-                    if (gameOver && !messageBox.style.display || messageBox.style.display === 'none') {
+                    if (gameOver && (!messageBox.style.display || messageBox.style.display === 'none')) {
                          // Assicura che il messaggio di game over sia mostrato
                         if (player.lives <= 0) {
                             showMessage("GAME OVER", `Punteggio Finale: ${player.score}. Premi OK per riprovare.`);
@@ -669,7 +680,7 @@
                 gameOver = true;
                 gameStarted = false;
                 playSound("A2", "1n"); // Suono di game over
-                showMessage("GAME OVER", `${reason} Punteggio Finale: ${player.score}. Premi OK per riprovare.`);
+                showMessage("GAME OVER", `Punteggio Finale: ${player.score}. Premi OK per riprovare.`);
             }
 
             function showMessage(title, text, callback) {

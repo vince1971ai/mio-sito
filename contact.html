@@ -120,14 +120,17 @@
     </style>
 </head>
 <body>
-    <div id="navbar-placeholder"></div>
-    <script>
-        fetch('nav.html') // Richiede il file nav.html che contiene il menu
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('navbar-placeholder').innerHTML = data;
-            });
-    </script>
+    <div class="button-container">
+        <a href="index.html" class="nav-button">HOME</a>
+        <a href="about.html" class="nav-button">ABOUT</a>
+        <a href="3dmap.html" class="nav-button">3DMAP</a>
+        <a href="Space_invaders.html" class="nav-button">INVADERS</a>
+        <a href="podcast.html" class="nav-button">PODCAST</a>
+        <a href="badge.html" class="nav-button">BADGE</a>
+        <a href="prompt_optimizer.html" class="nav-button">PROMPT OPTIMIZER</a>
+        <a href="ask_ai.html" class="nav-button">ASK AI</a>
+        <a href="contact.html" class="nav-button">CONTACT</a>
+    </div>
     <div class="page-content">
         <h1>Contact Me</h1>
         <form id="contactForm" class="contact-form">
@@ -149,20 +152,16 @@
     </div>
 
     <script>
-        window.addEventListener('load', () => { // Cambiato da DOMContentLoaded a load
+        window.addEventListener('load', () => {
             const contactForm = document.getElementById('contactForm');
             const formStatusMessage = document.getElementById('formStatusMessage');
             const submitButton = contactForm.querySelector('button[type="submit"]');
 
-            // URL della tua funzione serverless per inviare email
             const SEND_EMAIL_API_URL = window.location.origin + '/api/send-email';
-            // Le tue configurazioni Supabase (lasciale così come sono)
             const SUPABASE_URL = 'https://ppmymwdjdvcsrfawpeqi.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbXltd2RqZHZjc3JmYXdwZXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NzUxOTMsImV4cCI6MjA2MzA1MTE5M30.MTjtLfYQv-ztDg1t4YZQmqwrPKzfTKyY0CPWKTEEKrc';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbXltd2RqZHZjc3JmYXdwZXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NzUxOTMsImV4cCI6MjA2MzA1MTE5M30.MTjtLfYv-ztDg1t4YZQmqwrPKzfTKyY0CPWKTEEKrc';
             const SUPABASE_TABLE_NAME = 'contact_messages';
 
-            // Inizializza il client Supabase
-            // Questo ora è garantito che venga eseguito DOPO che la libreria Supabase è caricata
             const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
@@ -172,7 +171,7 @@
             }
 
             contactForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Impedisce il ricaricamento della pagina
+                event.preventDefault();
 
                 formStatusMessage.textContent = '';
                 formStatusMessage.className = '';
@@ -190,7 +189,6 @@
                 let errorMessage = '';
 
                 try {
-                    // 1. Invia email tramite la funzione serverless SendGrid
                     const emailResponse = await fetch(SEND_EMAIL_API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -211,7 +209,6 @@
                 }
 
                 try {
-                    // 2. Salva su Supabase (logica esistente)
                     const { data, error } = await supabase
                         .from(SUPABASE_TABLE_NAME)
                         .insert([formDataObject]);
@@ -231,11 +228,10 @@
                 if (emailSent && supabaseSaved) {
                     formStatusMessage.textContent = 'Message sent and saved successfully!';
                     formStatusMessage.className = 'status-message status-success';
-                    contactForm.reset(); // Solo se tutto va a buon fine
+                    contactForm.reset();
                 } else if (emailSent && !supabaseSaved) {
                     formStatusMessage.textContent = `Email sent, but failed to save message. ${errorMessage}`;
                     formStatusMessage.className = 'status-message status-warning';
-                    // Non resetta il form qui, potrebbe esserci bisogno di ritentare il salvataggio o copiare i dati
                 } else if (!emailSent && supabaseSaved) {
                     formStatusMessage.textContent = `Message saved, but failed to send email. ${errorMessage}`;
                     formStatusMessage.className = 'status-message status-warning';
